@@ -1,0 +1,190 @@
+###############################################################################
+# RÜMPELROSS – DESIGN TOKENS v2  (Comic-Konzept verworfen)
+# Single source of truth für Werte. Erklärung/Warum steht in design.md.
+# Palette: GELB + SCHWARZ + warme GRAUS · Hell/Dunkel-Sektionsrhythmus.
+###############################################################################
+
+# ============================================================
+# 1) COLOR – PRIMITIVES (Rohwerte, nie direkt in Komponenten nutzen)
+# ============================================================
+color.yellow.500   = #FFC400   # ROSS-GELB · Signature / CTA / Akzent
+color.yellow.600   = #E09600   # Gold-Dunkel · Hover/Aktiv
+color.yellow.tint  = #FFF1C2   # sehr heller Gelb-Hintergrund (sparsam, z.B. Info-Hinweis)
+
+color.ink          = #141414   # Ross-Schwarz · dunkle Sektionen, Headlines
+color.ink.soft     = #1F1F1F   # Anthrazit · Karten auf dunklen Sektionen
+color.ink.raised   = #262626   # Hover-Fläche auf dunkel
+
+color.white        = #FFFFFF
+color.grey.50      = #FAFAF8
+color.grey.100     = #F2F1EE
+color.grey.200     = #E4E2DD
+color.grey.300     = #D4D1CB
+color.grey.400     = #B5B2AC
+color.grey.500     = #908D88
+color.grey.600     = #6E6B66
+color.grey.700     = #504D49
+color.grey.800     = #34322F
+color.grey.900     = #1C1B19
+
+color.success      = #2E9E5B
+color.error        = #D64545
+color.info         = #3A7BD5
+
+# ============================================================
+# 2) COLOR – SEMANTIC (in Komponenten DIESE nutzen)
+# ============================================================
+# Helle Sektionen
+--color-bg              = color.grey.50
+--color-bg-alt          = color.grey.100
+--color-surface         = color.white
+--color-border          = color.grey.200
+--color-text            = color.grey.800
+--color-text-muted      = color.grey.600
+--color-heading         = color.ink
+
+# Dunkle Sektionen (Hero, Quiz, Zwischen-CTAs, Footer)
+--color-bg-dark         = color.ink
+--color-surface-dark    = color.ink.soft
+--color-border-dark     = rgba(255,255,255,0.08)
+--color-text-dark       = rgba(255,255,255,0.85)
+--color-text-dark-muted = rgba(255,255,255,0.55)
+--color-heading-dark    = color.white
+
+# Akzent
+--color-accent          = color.yellow.500
+--color-accent-hover    = color.yellow.600
+--color-on-accent       = color.ink            # Text auf Gelb = IMMER schwarz
+--color-focus-ring      = rgba(255,196,0,0.35)
+--color-card-hover-glow = rgba(255,196,0,0.50) # Border-Glow dunkler Karten
+
+# Oversize-Deko-Zahlen
+--color-ghost-number-light = color.grey.200
+--color-ghost-number-dark  = #2A2A2A
+
+# ============================================================
+# 3) TYPOGRAPHY
+# ============================================================
+font.display   = "Barlow Semi Condensed", system-ui, sans-serif   # Headlines (700/800)
+font.body      = "Barlow", system-ui, -apple-system, sans-serif    # Text/UI (400/500/600)
+font.logo      = "Akko Pro Condensed"   # nur im Logo-SVG, NICHT als Webfont laden
+
+# Type scale (rem) – Major Third 1.250, fluid
+font.size.display = clamp(2.5rem, 5vw, 4rem)
+font.size.h1      = clamp(2.1rem, 4vw, 3.05rem)
+font.size.h2      = clamp(1.8rem, 3vw, 2.44rem)
+font.size.h3      = 1.95rem
+font.size.h4      = 1.56rem
+font.size.body-lg = 1.25rem
+font.size.body    = 1.00rem
+font.size.small   = 0.80rem
+font.size.kicker  = 0.80rem    # UPPERCASE, letter-spacing 0.1em
+font.size.ghost   = clamp(4rem, 10vw, 8rem)   # Oversize-Deko-Zahlen
+
+font.weight.regular  = 400
+font.weight.medium   = 500
+font.weight.semibold = 600
+font.weight.bold     = 700
+font.weight.extra    = 800
+
+line-height.tight = 1.1
+line-height.snug  = 1.2
+line-height.base  = 1.65
+line-height.lead  = 1.6
+
+# ============================================================
+# 4) SPACING (8px Basis)
+# ============================================================
+space.1  = 4px
+space.2  = 8px
+space.3  = 12px
+space.4  = 16px
+space.5  = 24px
+space.6  = 32px
+space.7  = 48px
+space.8  = 64px
+space.9  = 96px
+space.10 = 128px
+
+# ============================================================
+# 5) RADIUS
+# ============================================================
+radius.sm   = 8px
+radius.md   = 10px    # Buttons
+radius.input= 12px    # Inputs, Quiz-Optionen
+radius.lg   = 16px    # Karten
+radius.xl   = 24px
+radius.full = 9999px
+
+# ============================================================
+# 6) BORDER
+# ============================================================
+border.hairline = 1px      # Karten, Trenner
+border.ui       = 1.5px    # Sekundär-Buttons, Inputs
+border.accent   = 3px      # gelbe Feature-Kante (links an Karte)
+
+# ============================================================
+# 7) SHADOW (nur weich – Hard/Comic-Shadows sind verworfen)
+# ============================================================
+shadow.card = 0 2px 8px rgba(20,20,20,0.06)
+shadow.soft = 0 6px 20px rgba(20,20,20,0.08)
+shadow.lift = 0 12px 32px rgba(20,20,20,0.12)   # Hover angehobener Karten
+
+# ============================================================
+# 8) MOTION
+# ============================================================
+motion.fast       = 150ms
+motion.base       = 220ms
+motion.reveal     = 600ms                          # Scroll-Reveals
+motion.ease       = cubic-bezier(0.22, 1, 0.36, 1) # ease-out
+motion.stagger    = 90ms                           # Versatz Listen-Kinder
+motion.reveal-y   = 24px                           # translateY Startwert
+# prefers-reduced-motion: alles auf 0ms, Startzustand = sichtbar
+
+# ============================================================
+# 9) LAYOUT
+# ============================================================
+layout.max-width = 1200px
+layout.gutter    = 24px
+layout.section-y.desktop = 112px
+layout.section-y.mobile  = 64px
+breakpoint.sm = 640px
+breakpoint.md = 768px
+breakpoint.lg = 1024px
+breakpoint.xl = 1280px
+grid.columns = 12
+header.height = 72px
+header.height.scrolled = 60px
+
+# ============================================================
+# 10) Z-INDEX
+# ============================================================
+z.base = 0
+z.sticky = 100
+z.header = 200
+z.overlay = 800
+z.modal = 900
+z.toast = 1000
+
+###############################################################################
+# TAILWIND CONFIG SNIPPET (theme.extend)
+###############################################################################
+# colors: {
+#   ink:  { DEFAULT:'#141414', soft:'#1F1F1F', raised:'#262626' },
+#   ross: { 500:'#FFC400', 600:'#E09600', tint:'#FFF1C2' },
+#   grey: { 50:'#FAFAF8',100:'#F2F1EE',200:'#E4E2DD',300:'#D4D1CB',
+#           400:'#B5B2AC',500:'#908D88',600:'#6E6B66',700:'#504D49',
+#           800:'#34322F',900:'#1C1B19' },
+# },
+# fontFamily: {
+#   display: ['"Barlow Semi Condensed"','system-ui','sans-serif'],
+#   sans:    ['"Barlow"','system-ui','sans-serif'],
+# },
+# borderRadius: { sm:'8px', md:'10px', input:'12px', lg:'16px', xl:'24px' },
+# boxShadow: {
+#   card:'0 2px 8px rgba(20,20,20,0.06)',
+#   soft:'0 6px 20px rgba(20,20,20,0.08)',
+#   lift:'0 12px 32px rgba(20,20,20,0.12)',
+# },
+# maxWidth: { content:'1200px' },
+###############################################################################
