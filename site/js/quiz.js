@@ -174,7 +174,7 @@
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'quiz-opt';
       b.setAttribute('data-value', s.label);
-      b.innerHTML = '<svg class="q-icon" aria-hidden="true"><use href="assets/icons.svg#i-masz"/></svg> ' + s.label;
+      b.innerHTML = '<img class="q-icon" src="assets/icons/quadratmeter.png" alt="" /> ' + s.label;
       if (state.groesse === s.label) b.classList.add('selected');
       b.addEventListener('click', function () {
         wrap.querySelectorAll('.quiz-opt').forEach(function (x) { x.classList.remove('selected'); });

@@ -482,31 +482,18 @@ section{padding:var(--sec-y) 0}
 .card:hover h3, .card:hover p{
   color:var(--ink);
 }
-.card-icon-box {
-  width:48px;
-  height:48px;
-  border-radius:10px;
-  border:1px solid var(--g200);
-  background:var(--g50);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-bottom:18px;
-  transition:background .25s var(--ease), border-color .25s var(--ease);
-}
 .card-icon {
-  width:24px;
-  height:24px;
-  color:var(--ink);
-  transition:color .25s var(--ease), stroke .25s var(--ease);
-}
-.card:hover .card-icon-box {
-  background:var(--ink);
-  border-color:var(--ink);
+  width:64px;
+  height:64px;
+  object-fit:contain;
+  margin-bottom:20px;
+  transition:transform .2s var(--ease);
 }
 .card:hover .card-icon {
-  color:var(--yellow);
-  --ic-a:#fff;
+  transform:scale(1.1) rotate(2deg);
+}
+.card-dark:hover .card-icon {
+  transform:scale(1.1) rotate(2deg);
 }
 .card-feature{border-left:3px solid var(--yellow)}
 
@@ -777,8 +764,7 @@ body.quiz-open{overflow:hidden}
   position:fixed;top:22px;left:22px;z-index:420;display:flex;align-items:center;gap:10px;
 }
 .quiz-overlay .quiz-brand img{height:38px;width:auto;object-fit:contain}
-.q-icon{width:26px;height:26px;flex:0 0 auto;color:var(--text-dark)}
-.quiz-opt.selected .q-icon{color:#fff}
+.q-icon{width:32px;height:32px;flex:0 0 auto;object-fit:contain}
 .quiz-shell{width:100%;max-width:680px;margin:0 auto;padding:96px var(--gutter) 80px}
 .quiz-progress{height:4px;background:var(--border-dark);border-radius:2px;margin-bottom:40px;overflow:hidden}
 .quiz-progress i{display:block;height:100%;background:var(--yellow);width:0;transition:width .35s var(--ease)}
@@ -847,10 +833,7 @@ body.quiz-open{overflow:hidden}
 }
 .nl-item p{color:var(--g600);font-size:.96rem;margin:0;padding-left:22px}
 .nl-zusatz .card-dark{display:flex;flex-direction:column}
-.nl-zusatz .card-icon-box{
-  background:var(--ink-raised);border-color:var(--border-dark);
-}
-.nl-zusatz .card-icon{color:#fff}
+
 
 /* ============================================================
    WHATSAPP / FOTO-SCHNELLANGEBOT + DREI WEGE
