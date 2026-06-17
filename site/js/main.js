@@ -121,6 +121,92 @@
     updateLine();
   }
 
+  /* ---------- Ablauf: feste Hintergrund-Figur, Frames laufen mit Scroll ---------- */
+  (function () {
+    var canvas = document.getElementById('ablaufCanvas');
+    var sec = document.getElementById('ablauf');
+    if (!canvas || !sec) return;
+    var ctx = canvas.getContext('2d');
+    var FRAMES = 97, BASE = 'assets/video_seq/ezgif-frame-';
+    var imgs = new Array(FRAMES), ready = false, lastIdx = -1, raf = false;
+    var reducedMo = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var mqDesktop = window.matchMedia('(min-width:1024px)');
+
+    function draw(idx) {
+      var img = imgs[idx];
+      if (!img || !img.complete || !img.naturalWidth) return;
+      var cw = canvas.clientWidth, ch = canvas.clientHeight;
+      if (!cw || !ch) return;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var bw = Math.round(cw * dpr), bh = Math.round(ch * dpr);
+      if (canvas.width !== bw || canvas.height !== bh) { canvas.width = bw; canvas.height = bh; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cw, ch);
+      // Video als Vollbild-Hintergrund (object-fit: cover)
+      var ir = img.naturalWidth / img.naturalHeight;
+      var cr = cw / ch;
+      var dh, dw, dx, dy;
+      if (ir > cr) {
+        dh = ch;
+        dw = ch * ir;
+        dx = (cw - dw) / 2;
+        dy = 0;
+      } else {
+        dw = cw;
+        dh = cw / ir;
+        dx = 0;
+        dy = (ch - dh) / 2;
+      }
+      ctx.drawImage(img, dx, dy, dw, dh);
+      lastIdx = idx;
+    }
+    function progress() {
+      var r = sec.getBoundingClientRect();
+      var vh = window.innerHeight;
+      var dist = sec.offsetHeight + vh; // The amount of scroll from entering viewport bottom to leaving viewport top
+      var passed = vh - r.top;
+      if (passed <= 0) return 0;
+      return Math.min(Math.max(passed / dist, 0), 1);
+    }
+    function render() {
+      raf = false;
+      if (!ready) return;
+      var p = reducedMo ? 0.5 : progress();
+      var idx = Math.round(p * (FRAMES - 1));
+      if (idx < 0) idx = 0; if (idx > FRAMES - 1) idx = FRAMES - 1;
+      if (idx !== lastIdx) draw(idx);
+    }
+    function onScroll() {
+      // Parallax-Fixierung (wirkt wie position: fixed aber auf die Sektion beschnitten)
+      var r = sec.getBoundingClientRect();
+      var headerHeight = header ? header.offsetHeight : 60;
+      var pin = document.querySelector('.ablauf-bg-pin');
+      if (pin) pin.style.transform = 'translate3d(0, ' + (headerHeight - r.top) + 'px, 0)';
+
+      if (ready && !raf) { raf = true; requestAnimationFrame(render); }
+    }
+    function preload() {
+      ready = true;
+      for (var i = 1; i <= FRAMES; i++) {
+        (function (n) {
+          var im = new Image();
+          im.onload = function () { lastIdx = -1; render(); };
+          im.src = BASE + ('00' + n).slice(-3) + '.jpg';
+          imgs[n - 1] = im;
+        })(i);
+      }
+    }
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { preload(); io.disconnect(); } });
+      }, { rootMargin: '800px 0px' });
+      io.observe(sec);
+    } else { preload(); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () { lastIdx = -1; onScroll(); }, { passive: true });
+    onScroll(); // Initiale Positionierung
+  })();
+
   /* ---------- Vorher/Nachher-Slider ---------- */
   var slider = document.getElementById('baSlider');
   if (slider) {
@@ -210,6 +296,99 @@
       if (active) sizeWrapper(active);
     });
   }
+
+  /* ---------- WhatsApp Chat-Simulation ---------- */
+  (function () {
+    var chat = document.getElementById('waChat');
+    if (!chat) return;
+    var msgs = Array.prototype.slice.call(chat.querySelectorAll('.chat-msg'));
+    if (!msgs.length) return;
+
+    chat.classList.add('js-anim');
+    msgs.forEach(function (m) { m.classList.add('is-hidden'); });
+
+    function scrollDown() { chat.scrollTop = chat.scrollHeight; }
+
+    var statusEl = document.getElementById('waStatus');
+    function setStatus(on) {
+      if (!statusEl) return;
+      statusEl.textContent = on ? 'schreibt …' : 'online';
+      statusEl.classList.toggle('typing', !!on);
+    }
+
+    function reveal(m) {
+      m.classList.remove('is-hidden');
+      void m.offsetHeight;           // force reflow so the transition runs
+      m.classList.add('is-in');
+      scrollDown();
+    }
+
+    // Turn the latest visible client message's ticks blue (operator "read" it)
+    function markRead() {
+      for (var k = msgs.length - 1; k >= 0; k--) {
+        if (!msgs[k].classList.contains('is-in')) continue;
+        var t = msgs[k].querySelector('.chat-ticks');
+        if (t) { t.classList.add('read'); }
+        break;
+      }
+    }
+
+    var i = 0, started = false;
+    function step() {
+      if (i >= msgs.length) return;
+      var m = msgs[i];
+      var pre = parseInt(m.getAttribute('data-delay') || '500', 10);
+      var typing = parseInt(m.getAttribute('data-typing') || '0', 10);
+      setTimeout(function () {
+        if (typing) {
+          markRead();
+          setStatus(true);
+          var t = document.createElement('div');
+          t.className = 'chat-typing';
+          t.innerHTML = '<span></span><span></span><span></span>';
+          chat.appendChild(t);
+          void t.offsetHeight;
+          t.classList.add('is-in');
+          scrollDown();
+          setTimeout(function () {
+            if (t.parentNode) chat.removeChild(t);
+            setStatus(false);
+            reveal(m); i++; step();
+          }, typing);
+        } else {
+          reveal(m); i++; step();
+        }
+      }, pre);
+    }
+
+    function showAll() {
+      msgs.forEach(function (m) {
+        m.classList.remove('is-hidden');
+        m.classList.add('is-in');
+        var t = m.querySelector('.chat-ticks');
+        if (t) t.classList.add('read');
+      });
+      scrollDown();
+    }
+
+    function start() {
+      if (started) return;
+      started = true;
+      if (reduced) { showAll(); return; }
+      step();
+    }
+
+    if ('IntersectionObserver' in window) {
+      var io2 = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { start(); io2.disconnect(); }
+        });
+      }, { threshold: 0.4 });
+      io2.observe(chat);
+    } else {
+      start();
+    }
+  })();
 })();
 
 

@@ -256,9 +256,15 @@
 
 <!-- ================= S2 · ABLAUF ================= -->
 <section id="ablauf">
-  <div class="container">
+  <!-- Fest stehende Hintergrund-Animation (Frames laufen beim Scrollen durch) -->
+  <div class="ablauf-bg" aria-hidden="true">
+    <div class="ablauf-bg-pin">
+      <canvas id="ablaufCanvas" class="ablauf-canvas"></canvas>
+    </div>
+  </div>
+  <div class="container ablauf-content">
     <div class="ablauf-grid">
-      <div class="ablauf-sticky" data-reveal>
+      <div class="ablauf-intro" data-reveal>
         <span class="kicker">So einfach geht's</span>
         <h2>In 4 Schritten <span class="u-yellow">sorgenfrei</span></h2>
         <p class="lead" style="color:var(--g600)">Sie melden sich – wir machen den Rest.
@@ -308,45 +314,78 @@
       
       <!-- Links: Chat-Mockup -->
       <div class="chat-mockup" data-reveal>
-        <span class="chat-badge">Ø 30 Min. Antwortzeit</span>
+        <span class="chat-tape"><span class="chat-tape-dot"></span>Live-Demo · echter Chat-Ablauf</span>
         <div class="mockup-phone">
-          <div class="mockup-phone-camera"></div>
           <div class="mockup-phone-display">
+            <div class="chat-statusbar" aria-hidden="true">
+              <span class="csb-time">9:41</span>
+              <span class="csb-icons">
+                <svg viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+                <svg viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.3 4.2a9.4 9.4 0 0 1 13.4 0"/><path d="M3.9 7a5.6 5.6 0 0 1 8.2 0"/><circle cx="8" cy="10.3" r="0.7" fill="currentColor" stroke="none"/></svg>
+                <svg viewBox="0 0 25 12" fill="none"><rect x="0.7" y="0.9" width="20" height="10.2" rx="2.6" stroke="currentColor" stroke-width="1.3"/><rect x="2.3" y="2.5" width="14.4" height="7" rx="1.3" fill="currentColor"/><rect x="22" y="3.8" width="2.2" height="4.4" rx="1.1" fill="currentColor"/></svg>
+              </span>
+            </div>
             <div class="chat-header">
-              <div class="chat-avatar">RR</div>
+              <span class="chat-back" aria-hidden="true">‹</span>
+              <div class="chat-avatar"><img src="assets/logo-horse.png" alt="RümpelRoss" loading="lazy"></div>
               <div class="chat-user-info">
-                <span class="chat-name">RümpelRoss Service</span>
-                <span class="chat-status">online</span>
+                <span class="chat-name">RümpelRoss</span>
+                <span class="chat-status" id="waStatus">online</span>
+              </div>
+              <span class="chat-header-icons" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.7 21 3 13.3 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .7-.2 1l-2.3 2.2z"/></svg>
+              </span>
+            </div>
+            <div class="chat-body" id="waChat" role="log" aria-label="Beispiel-Chat mit RümpelRoss">
+              <span class="chat-day">Heute</span>
+              <div class="chat-msg client" data-delay="500">
+                Hallo! Wir müssen die Wohnung meiner Oma in Stuttgart-Vaihingen auflösen – 3 Zimmer, randvoll. Was kostet sowas ungefähr?
+                <span class="chat-msg-time">9:32<span class="chat-ticks">✓✓</span></span>
+              </div>
+              <div class="chat-msg operator" data-delay="350" data-typing="1500">
+                Hallo, mein herzliches Beileid. 🙏 Sowas machen wir oft – ganz in Ruhe. Schicken Sie mir einfach 3–4 Fotos der vollsten Räume, dann gebe ich Ihnen direkt eine ehrliche Spanne.
+                <span class="chat-msg-time">9:33</span>
+              </div>
+              <div class="chat-msg client" data-delay="800">
+                <span class="chat-file">
+                  <span class="chat-file-ico">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.5 5 8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-1.5-2h-5zM12 17a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
+                  </span>
+                  <span class="chat-file-meta">
+                    <span class="chat-file-name">Wohnzimmer.jpg</span>
+                    <span class="chat-file-sub">Foto · 1,8 MB</span>
+                  </span>
+                </span>
+                Hier das Wohnzimmer – der Keller ist auch noch voll.
+                <span class="chat-msg-time">9:35<span class="chat-ticks">✓✓</span></span>
+              </div>
+              <div class="chat-msg operator" data-delay="350" data-typing="1900">
+                Danke, das lässt sich gut einschätzen. 👍 Grobe Spanne: <strong>1.400 – 1.800 €</strong> inkl. Entsorgung &amp; besenrein. Brauchbare Möbel rechnen wir an. Sollen wir einen kostenlosen Vor-Ort-Termin für den verbindlichen Festpreis machen?
+                <span class="chat-msg-time">9:37</span>
+              </div>
+              <div class="chat-msg client" data-delay="950">
+                Ja, sehr gerne – am liebsten noch diese Woche.
+                <span class="chat-msg-time">9:38<span class="chat-ticks">✓✓</span></span>
+              </div>
+              <div class="chat-msg operator" data-delay="350" data-typing="1500">
+                Perfekt. Donnerstag um 14 Uhr passt bei uns. Dann steht Ihr Festpreis schriftlich – ohne Sternchen. 🤝
+                <span class="chat-msg-time">9:38</span>
               </div>
             </div>
-            <div class="chat-body">
-              <div class="chat-msg client">
-                Hallo! Ich bräuchte ein Angebot für die Entrümpelung von meinem Keller. Wie läuft das?
-                <span class="chat-msg-time">11:02</span>
-              </div>
-              <div class="chat-msg operator">
-                Hallo! Gerne. Schicken Sie mir am besten einfach 2-3 Fotos vom Keller per WhatsApp. Dann werfe ich direkt einen Blick darauf.
-                <span class="chat-msg-time">11:04</span>
-              </div>
-              <div class="chat-msg client">
-                <div class="chat-img-placeholder">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
-                    <circle cx="9" cy="9" r="2"/>
-                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-                  </svg>
-                  <span>Foto_Keller_1.jpg</span>
-                </div>
-                Hier ist schonmal ein Bild.
-                <span class="chat-msg-time">11:05</span>
-              </div>
-              <div class="chat-msg operator">
-                Super, danke! Das sieht nach ca. 200 - 300 € aus (inkl. Entsorgung &amp; Wertanrechnung). Sollen wir einen kostenlosen Besichtigungstermin für den finalen Festpreis vereinbaren?
-                <span class="chat-msg-time">11:15</span>
-              </div>
+            <div class="chat-input" aria-hidden="true">
+              <span class="ci-plus">+</span>
+              <span class="ci-field">Nachricht</span>
+              <span class="ci-cam">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.5 5 8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-1.5-2h-5zM12 17a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
+              </span>
+              <span class="ci-mic">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2z"/></svg>
+              </span>
             </div>
           </div>
         </div>
+        <span class="chat-badge">Ø 30 Min. Antwortzeit</span>
       </div>
 
       <!-- Rechts: Content & Steps -->

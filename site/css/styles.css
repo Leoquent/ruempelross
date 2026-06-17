@@ -377,11 +377,41 @@ section{padding:var(--sec-y) 0}
 }
 .sec-dark .ghost-num{color:#2a2a2a}
 
-/* ---------- Ablauf (Scrollytelling-Timeline) ---------- */
-.ablauf-grid{display:grid;grid-template-columns:1fr;gap:48px}
+/* ---------- Ablauf (Scrollytelling: feste Hintergrund-Figur) ---------- */
+#ablauf{position:relative}
+.ablauf-content{position:relative;z-index:1}
+.ablauf-grid{display:grid;grid-template-columns:1fr;gap:40px}
+/* Hintergrund-Ebene: spannt die ganze Sektion (oben/unten bündig) */
+.ablauf-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.ablauf-bg-pin{position:absolute;top:0;left:0;right:0;height:calc(100svh - 60px);will-change:transform}
+.ablauf-canvas{display:block;width:100%;height:100%}
+
+/* Mobile: Video mit Overlay für Lesbarkeit */
+.ablauf-bg-pin::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(250, 250, 248, 0.75);
+  z-index: 1;
+}
+@media(max-width:1023px){
+  .ablauf-content{padding:6px 0}
+}
+
 @media(min-width:1024px){
-  .ablauf-grid{grid-template-columns:5fr 7fr;gap:80px}
-  .ablauf-sticky{position:sticky;top:120px;align-self:start}
+  .ablauf-grid{grid-template-columns:5fr 7fr;gap:80px;align-items:start}
+  /* Scroll-Strecke, damit die Frames sauber durchlaufen */
+  .ablauf-intro{
+    position: sticky;
+    top: 15vh;
+    padding: 5vh 0 7vh;
+  }
+  .timeline li{padding-bottom:17vh}
+  .timeline li:last-child{padding-bottom:13vh}
+  /* Lesbarkeit über der Figur */
+  .ablauf-bg-pin::after {
+    background: linear-gradient(90deg, rgba(250, 250, 248, 0.95) 0%, rgba(250, 250, 248, 0.6) 100%);
+  }
 }
 .timeline{position:relative;list-style:none;margin:0;padding:0 0 0 44px}
 .timeline::before{ /* graue Grundlinie */
@@ -906,26 +936,40 @@ body.quiz-open{overflow:hidden}
   display: flex;
   flex-direction: column;
 }
+.chat-statusbar {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 18px 5px;
+  color: #fff;
+}
+.csb-time { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.02em; }
+.csb-icons { display: flex; align-items: center; gap: 7px; color: #fff; }
+.csb-icons svg { height: 11px; width: auto; display: block; }
 .chat-header {
   background: #202c33;
-  padding: 26px 16px 10px 16px;
+  padding: 8px 16px 10px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .chat-avatar {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--ink-raised);
+  background: #fff;
+  overflow: hidden;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  color: var(--yellow);
-  font-family: var(--f-display);
-  font-size: 0.95rem;
+}
+.chat-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .chat-user-info {
   display: flex;
@@ -954,15 +998,24 @@ body.quiz-open{overflow:hidden}
   border-radius: 50%;
   display: inline-block;
 }
+.chat-status.typing::before { display: none; }
+.chat-status.typing { font-style: italic; }
 .chat-body {
   flex: 1;
+  min-height: 0;
   padding: 16px;
-  background: radial-gradient(circle, #111b21 0%, #0b141a 100%);
+  background:
+    radial-gradient(140% 120% at 80% 0%, rgba(255,196,0,0.05) 0%, transparent 45%),
+    radial-gradient(circle, #111b21 0%, #0b141a 100%);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  overflow: hidden;
+  gap: 12px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.chat-body::-webkit-scrollbar { display: none; }
 .chat-msg {
   max-width: 85%;
   border-radius: 12px;
@@ -1033,6 +1086,202 @@ body.quiz-open{overflow:hidden}
     bottom: -12px;
     transform: none;
   }
+}
+
+/* ===== Animated WhatsApp Chat ===== */
+.chat-back {
+  color: rgba(255,255,255,0.55);
+  font-size: 1.4rem;
+  line-height: 1;
+  margin-right: -2px;
+}
+.chat-header-icons {
+  margin-left: auto;
+  display: flex;
+  gap: 16px;
+  color: rgba(255,255,255,0.55);
+}
+.chat-header-icons svg { width: 18px; height: 18px; }
+
+/* "Heute" date pill */
+.chat-day {
+  align-self: center;
+  background: rgba(28,40,48,0.92);
+  color: rgba(255,255,255,0.6);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+}
+
+/* Bold text inside bubbles — no color (WhatsApp has none) */
+.chat-msg strong { font-weight: 700; color: inherit; }
+
+/* Read receipts */
+.chat-ticks {
+  margin-left: 5px;
+  letter-spacing: -2px;
+  color: rgba(255,255,255,0.45);
+  transition: color 0.3s ease;
+}
+.chat-ticks.read { color: #53bdeb; }
+
+/* File-attachment box (instead of a real image) */
+.chat-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 200px;
+  max-width: 100%;
+  margin-bottom: 6px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: rgba(0,0,0,0.22);
+}
+.chat-file-ico {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-file-ico svg { width: 19px; height: 19px; color: #e9edef; }
+.chat-file-meta { display: flex; flex-direction: column; min-width: 0; }
+.chat-file-name {
+  font-size: 0.8rem;
+  color: #e9edef;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-file-sub {
+  font-size: 0.66rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 1px;
+}
+
+/* Sequential reveal — only active when JS drives the animation */
+.chat-body.js-anim .chat-msg {
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  transform-origin: bottom;
+  transition: opacity 0.32s ease, transform 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.chat-body.js-anim .chat-msg.is-hidden { display: none; }
+.chat-body.js-anim .chat-msg.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Typing indicator */
+.chat-typing {
+  align-self: flex-start;
+  background: #202c33;
+  border-radius: 12px;
+  border-top-left-radius: 2px;
+  padding: 13px 14px;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+  transition: opacity 0.25s ease, transform 0.3s var(--ease);
+}
+.chat-typing.is-in { opacity: 1; transform: none; }
+.chat-typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  animation: waType 1.25s infinite ease-in-out;
+}
+.chat-typing span:nth-child(2) { animation-delay: 0.18s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes waType {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* Input bar */
+.chat-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #0b141a;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.ci-plus {
+  color: rgba(255,255,255,0.5);
+  font-size: 1.3rem;
+  line-height: 1;
+  width: 22px;
+  text-align: center;
+}
+.ci-field {
+  flex: 1;
+  background: #202c33;
+  color: rgba(255,255,255,0.4);
+  border-radius: 18px;
+  padding: 9px 14px;
+  font-size: 0.8rem;
+}
+.ci-cam svg { width: 20px; height: 20px; color: rgba(255,255,255,0.5); display: block; }
+.ci-mic {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ci-mic svg { width: 18px; height: 18px; color: #0b141a; }
+
+/* Live-Demo tape */
+.chat-tape {
+  position: absolute;
+  top: -15px;
+  left: -8px;
+  z-index: 11;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--yellow);
+  color: #141414;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 0.66rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 6px 13px;
+  border-radius: 5px;
+  box-shadow: var(--sh-soft);
+  transform: rotate(-3deg);
+}
+.chat-tape-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #141414;
+  animation: waPulseDot 1.8s infinite;
+}
+@keyframes waPulseDot {
+  0%   { box-shadow: 0 0 0 0 rgba(20,20,20,0.45); }
+  70%  { box-shadow: 0 0 0 7px rgba(20,20,20,0); }
+  100% { box-shadow: 0 0 0 0 rgba(20,20,20,0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-typing span,
+  .chat-tape-dot { animation: none; }
+  .chat-body { scroll-behavior: auto; }
+  .chat-body.js-anim .chat-msg { transition: none; }
 }
 .wa-steps {
   list-style: none;
