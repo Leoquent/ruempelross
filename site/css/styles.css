@@ -404,7 +404,7 @@ section{padding:var(--sec-y) 0}
   .ablauf-intro{
     position: sticky;
     top: 15vh;
-    padding: 5vh 0 7vh;
+    padding: 0;
   }
   .timeline li{padding-bottom:17vh}
   .timeline li:last-child{padding-bottom:13vh}
