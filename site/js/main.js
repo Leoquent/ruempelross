@@ -101,23 +101,33 @@
     var progress = timeline.querySelector('.progress');
     var items = timeline.querySelectorAll('li');
     var ticking = false;
+    // Mittelpunkt eines Punktes relativ zum Timeline-Anfang (dot: top:4px, Höhe 22px)
+    function dotCenter(li) { return li.offsetTop + 4 + 11; }
     function updateLine() {
       ticking = false;
+      if (!items.length) return;
       var rect = timeline.getBoundingClientRect();
       var vh = window.innerHeight;
-      // Fortschritt: wie weit die Timeline durch den Viewport gescrollt ist
-      var total = rect.height + vh * 0.4;
-      var passed = Math.min(Math.max(vh * 0.7 - rect.top, 0), total);
-      var pct = passed / total;
-      if (progress) progress.style.height = (pct * 100) + '%';
+      var trigger = vh * 0.6;            // Linie "kommt an", wenn ein Punkt diese Höhe kreuzt
+      var startY = dotCenter(items[0]);  // Punkt 1
+      var endY = dotCenter(items[items.length - 1]); // Punkt 4
+      var span = endY - startY;
+      // Linien exakt von Punkt 1 bis Punkt 4 spannen (kein Überlauf danach)
+      timeline.style.setProperty('--line-start', startY + 'px');
+      timeline.style.setProperty('--line-span', span + 'px');
+      // Füllkopf in Timeline-Koordinaten
+      var fillHead = trigger - rect.top;
+      var fillPx = Math.min(Math.max(fillHead - startY, 0), span);
+      if (progress) progress.style.height = fillPx + 'px';
+      // Punkt leuchtet erst, wenn die Fülllinie ihn erreicht
       items.forEach(function (li) {
-        var lr = li.getBoundingClientRect();
-        li.classList.toggle('active', lr.top < vh * 0.7);
+        li.classList.toggle('active', dotCenter(li) <= startY + fillPx + 1);
       });
     }
     window.addEventListener('scroll', function () {
       if (!ticking) { ticking = true; requestAnimationFrame(updateLine); }
     }, { passive: true });
+    window.addEventListener('resize', updateLine, { passive: true });
     updateLine();
   }
 
@@ -177,11 +187,20 @@
       if (idx !== lastIdx) draw(idx);
     }
     function onScroll() {
-      // Parallax-Fixierung (wirkt wie position: fixed aber auf die Sektion beschnitten)
+      // Use clip-path to restrict the fixed canvas to the section's visible area
       var r = sec.getBoundingClientRect();
-      var headerHeight = header ? header.offsetHeight : 60;
+      var vh = window.innerHeight;
+      var headerH = header ? header.offsetHeight : 60;
       var pin = document.querySelector('.ablauf-bg-pin');
-      if (pin) pin.style.transform = 'translate3d(0, ' + (headerHeight - r.top) + 'px, 0)';
+      if (pin) {
+        var clipTop    = Math.max(r.top - headerH, 0);
+        var clipBottom = Math.max(vh - r.bottom, 0);
+        if (r.top > vh || r.bottom < headerH) {
+          pin.style.clipPath = 'inset(0 0 100% 0)'; // fully hidden outside section
+        } else {
+          pin.style.clipPath = 'inset(' + clipTop + 'px 0px ' + clipBottom + 'px 0px)';
+        }
+      }
 
       if (ready && !raf) { raf = true; requestAnimationFrame(render); }
     }
@@ -389,6 +408,217 @@
       start();
     }
   })();
+
+  /* ---------- Google Maps – DSGVO Consent-Gate ---------- */
+  (function () {
+    var STORE = 'rr_maps_consent';
+    var gates = [].slice.call(document.querySelectorAll('.map-consent'));
+    if (!gates.length) return;
+
+    function load(gate) {
+      if (gate.classList.contains('is-loaded')) return;
+      var url = gate.getAttribute('data-map-embed');
+      if (!url) return;
+      var iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.title = 'Standort von RümpelRoss auf Google Maps';
+      iframe.loading = 'lazy';
+      iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+      iframe.setAttribute('allowfullscreen', '');
+      gate.insertBefore(iframe, gate.firstChild);
+      gate.classList.add('is-loaded');
+    }
+
+    var remembered = false;
+    try { remembered = window.localStorage.getItem(STORE) === '1'; } catch (e) {}
+
+    gates.forEach(function (gate) {
+      if (remembered) { load(gate); return; }
+      var btn = gate.querySelector('[data-map-load]');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var remember = gate.querySelector('[data-map-remember]');
+        if (remember && remember.checked) {
+          try { window.localStorage.setItem(STORE, '1'); } catch (e) {}
+        }
+        load(gate);
+      });
+    });
+  })();
+
+  /* ---------- Bewertungen-Karussell (Fade-Übergang) ---------- */
+  (function () {
+    var root = document.querySelector('.reviews-carousel');
+    if (!root) return;
+    var track = root.querySelector('.rev-track');
+    var prevBtn = root.querySelector('.rev-prev');
+    var nextBtn = root.querySelector('.rev-next');
+    var dotsWrap = root.querySelector('.rev-dots');
+    if (!track) return;
+
+    var cards = Array.prototype.slice.call(track.querySelectorAll('.rev-card'));
+    var count = cards.length;
+    if (count < 2) return;
+
+    var current = 0;
+    var animating = false;
+
+    // Dots erstellen
+    var dots = [];
+    for (var i = 0; i < count; i++) {
+      (function (idx) {
+        var d = document.createElement('button');
+        d.type = 'button';
+        d.className = 'rev-dot' + (idx === 0 ? ' active' : '');
+        d.setAttribute('aria-label', 'Bewertung ' + (idx + 1));
+        d.addEventListener('click', function () { goTo(idx); restart(); });
+        dotsWrap.appendChild(d);
+        dots.push(d);
+      })(i);
+    }
+
+    // Track-Höhe dynamisch anpassen um Layout-Verschiebungen zu verhindern
+    function setTrackHeight() {
+      var maxH = 0;
+      cards.forEach(function (c) {
+        var prevPos = c.style.position;
+        var prevVis = c.style.visibility;
+        var prevTrans = c.style.transform;
+        var prevTransition = c.style.transition;
+        var prevOpacity = c.style.opacity;
+
+        c.style.position = 'relative';
+        c.style.visibility = 'hidden';
+        c.style.transform = 'none';
+        c.style.transition = 'none';
+        c.style.opacity = '1';
+
+        var h = c.offsetHeight;
+        if (h > maxH) maxH = h;
+
+        c.style.position = prevPos;
+        c.style.visibility = prevVis;
+        c.style.transform = prevTrans;
+        c.style.transition = prevTransition;
+        c.style.opacity = prevOpacity;
+      });
+      track.style.height = maxH + 'px';
+    }
+
+    // Initiale Höhenberechnung
+    setTrackHeight();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(setTrackHeight);
+    }
+    
+    // Bei Resize neu berechnen
+    var resizeTimer;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(setTrackHeight, 100);
+    });
+
+    // Erste Karte aktivieren
+    cards[0].classList.add('is-active');
+
+    function updateDots() {
+      for (var k = 0; k < dots.length; k++) {
+        dots[k].classList.toggle('active', k === current);
+      }
+    }
+
+    function goTo(next, dir) {
+      if (animating || next === current) return;
+      animating = true;
+
+      var outCard = cards[current];
+      var inCard  = cards[next];
+
+      if (!dir) {
+        dir = (next > current) ? 'left' : 'right';
+      }
+
+      var exitClass = (dir === 'left') ? 'is-exit-left' : 'is-exit-right';
+      var enterClass = (dir === 'left') ? 'is-enter-right' : 'is-enter-left';
+
+      // Austretende Karte
+      outCard.classList.remove('is-active');
+      outCard.classList.add(exitClass);
+
+      // Eintretende Karte initial platzieren, dann aktivieren
+      inCard.classList.add(enterClass);
+      void inCard.offsetHeight; // Reflow erzwingen
+      inCard.classList.remove(enterClass);
+      inCard.classList.add('is-active');
+
+      // Nach der Transition aufräumen
+      var cleanup = function (e) {
+        if (e && e.propertyName !== 'opacity') return;
+        outCard.removeEventListener('transitionend', cleanup);
+        outCard.classList.remove(exitClass);
+        animating = false;
+      };
+      outCard.addEventListener('transitionend', cleanup);
+
+      current = next;
+      updateDots();
+    }
+
+    function next() { goTo((current + 1) % count, 'left'); }
+    function prev() { goTo((current - 1 + count) % count, 'right'); }
+
+    // Autoplay
+    var timer = null, DELAY = 5200;
+    function startAuto() {
+      if (reduced) return;
+      stopAuto();
+      timer = setInterval(function () {
+        if (!document.hidden && !dragging) next();
+      }, DELAY);
+    }
+    function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+    function restart() { stopAuto(); startAuto(); }
+
+    if (nextBtn) nextBtn.addEventListener('click', function () { next(); restart(); });
+    if (prevBtn) prevBtn.addEventListener('click', function () { prev(); restart(); });
+    root.addEventListener('mouseenter', stopAuto);
+    root.addEventListener('mouseleave', startAuto);
+
+    // Touch/Drag Swipe – Richtung bestimmt next/prev
+    var dragging = false, startXp = 0, dx = 0;
+    function down(e) {
+      dragging = true; dx = 0;
+      startXp = e.touches ? e.touches[0].clientX : e.clientX;
+      stopAuto();
+    }
+    function move(e) {
+      if (!dragging) return;
+      dx = (e.touches ? e.touches[0].clientX : e.clientX) - startXp;
+      if (Math.abs(dx) > 6 && e.cancelable) e.preventDefault();
+    }
+    function up() {
+      if (!dragging) return;
+      dragging = false;
+      var threshold = 50;
+      if (dx <= -threshold) next();
+      else if (dx >= threshold) prev();
+      restart();
+    }
+    track.addEventListener('mousedown', down);
+    window.addEventListener('mousemove', move, { passive: false });
+    window.addEventListener('mouseup', up);
+    track.addEventListener('touchstart', down, { passive: true });
+    track.addEventListener('touchmove', move, { passive: false });
+    track.addEventListener('touchend', up);
+
+    // Keyboard
+    root.setAttribute('tabindex', '-1');
+    root.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') { prev(); restart(); }
+      else if (e.key === 'ArrowRight') { next(); restart(); }
+    });
+
+    startAuto();
+  })();
+
 })();
-
-

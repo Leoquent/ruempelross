@@ -383,7 +383,7 @@ section{padding:var(--sec-y) 0}
 .ablauf-grid{display:grid;grid-template-columns:1fr;gap:40px}
 /* Hintergrund-Ebene: spannt die ganze Sektion (oben/unten bündig) */
 .ablauf-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.ablauf-bg-pin{position:absolute;top:0;left:0;right:0;height:calc(100svh - 60px);will-change:transform}
+.ablauf-bg-pin{position:fixed;top:60px;left:0;right:0;height:calc(100svh - 60px);will-change:clip-path}
 .ablauf-canvas{display:block;width:100%;height:100%}
 
 /* Mobile: Video mit Overlay für Lesbarkeit */
@@ -414,20 +414,27 @@ section{padding:var(--sec-y) 0}
   }
 }
 .timeline{position:relative;list-style:none;margin:0;padding:0 0 0 44px}
-.timeline::before{ /* graue Grundlinie */
-  content:"";position:absolute;left:10px;top:8px;bottom:8px;width:2px;background:var(--g200);
+.timeline::before{ /* graue Grundlinie – endet am letzten Punkt */
+  content:"";position:absolute;left:10px;
+  top:var(--line-start,8px);height:var(--line-span,calc(100% - 16px));
+  width:2px;background:var(--g200);
 }
-.timeline .progress{ /* gelbe Fülllinie */
-  position:absolute;left:10px;top:8px;width:2px;background:var(--yellow);
-  height:0;max-height:calc(100% - 16px);
+.timeline .progress{ /* gelbe Fülllinie – wächst von Punkt 1 zu Punkt 4 */
+  position:absolute;left:10px;
+  top:var(--line-start,8px);width:2px;background:var(--yellow);
+  height:0;transition:height .12s linear;
 }
 .timeline li{position:relative;padding:0 0 48px}
 .timeline li:last-child{padding-bottom:0}
 .timeline .dot{
   position:absolute;left:-44px;top:4px;width:22px;height:22px;border-radius:50%;
-  background:var(--g50);border:2px solid var(--g300);transition:border-color .3s,background .3s;
+  background:var(--g50);border:2px solid var(--g300);
+  transition:border-color .3s,background .3s,box-shadow .3s;
 }
-.timeline li.active .dot{background:var(--yellow);border-color:var(--yellow)}
+.timeline li.active .dot{
+  background:var(--yellow);border-color:var(--yellow);
+  box-shadow:0 0 0 5px rgba(245,180,0,.18);
+}
 .timeline .step-kicker{font-size:.8rem;font-weight:700;letter-spacing:.1em;color:var(--g500);text-transform:uppercase}
 .timeline h3{margin:.2em 0 .3em}
 .timeline p{max-width:52ch;color:var(--g600);margin:0}
@@ -451,7 +458,7 @@ section{padding:var(--sec-y) 0}
 .ticker-wrap {
   width: 100%;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 .ticker {
   display: flex;
@@ -603,37 +610,264 @@ blockquote{
 }
 blockquote footer{font-size:.9rem;color:var(--g500);margin-top:12px}
 
-/* ---------- Reviews ---------- */
+/* ---------- Reviews (Legacy-Karten) ---------- */
 .review-card .stars{color:var(--yellow);font-size:1.05rem;letter-spacing:2px;margin-bottom:12px}
 .review-card .who{margin-top:16px;font-weight:600;color:var(--ink);font-size:.95rem}
 .review-card .who span{display:block;font-weight:400;color:var(--g500);font-size:.85rem}
+
+/* ---------- Bewertungen / Google-Karussell ---------- */
+.reviews-sec{overflow:hidden}
+.g-ic{width:18px;height:18px;display:inline-block;flex:0 0 auto}
+
+/* Kopf-Layout: Text + Badge links, ein Review rechts */
+.reviews-grid{display:grid;gap:34px;align-items:start}
+@media(min-width:920px){
+  .reviews-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.06fr);gap:56px;align-items:center}
+}
+.reviews-head-text h2{margin:0 0 .4em;max-width:14ch}
+.reviews-head-text .lead{margin:0;color:var(--g600);max-width:46ch}
+.reviews-head-text .g-rating{margin-top:30px}
+
+/* Google-Rating-Badge */
+.g-rating{
+  display:inline-flex;flex-direction:column;gap:7px;align-self:start;
+  padding:18px 24px;border-radius:16px;background:var(--white);
+  border:1px solid var(--g200);box-shadow:var(--sh-card);
+  text-decoration:none;min-width:230px;
+  transition:transform .25s var(--ease),box-shadow .25s var(--ease),border-color .25s var(--ease);
+}
+.g-rating:hover{transform:translateY(-3px);box-shadow:var(--sh-soft);border-color:var(--yellow)}
+.g-rating-head{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:var(--g600)}
+.g-rating-main{display:flex;align-items:center;gap:12px}
+.g-rating-main strong{font-family:var(--f-display);font-size:2.2rem;font-weight:800;color:var(--ink);line-height:1}
+.g-rating .g-stars{color:var(--yellow-dark);letter-spacing:2px;font-size:1.2rem}
+.g-rating-sub{font-size:.78rem;color:var(--g500)}
+.g-rating-link{font-size:.82rem;font-weight:600;color:var(--yellow-dark)}
+.g-rating:hover .g-rating-link{text-decoration:underline}
+
+/* Karussell – Slide & Fade */
+.reviews-carousel{position:relative}
+.rev-viewport{
+  /* kein overflow:hidden → Schatten nicht abschneiden */
+  position:relative;
+  padding:8px 2px 20px;
+}
+
+/* Slide & Fade Stack: alle Karten absolute positioniert */
+.rev-track{
+  position:relative;
+  list-style:none;margin:0;padding:0;
+  transition: height .3s ease; /* Weicher Übergang bei Höhenanpassung */
+}
+.rev-card{
+  /* Standardmäßig absolut positioniert, unsichtbar und nach rechts verschoben */
+  position:absolute;inset:0;
+  opacity:0;
+  visibility:hidden;
+  transform:translateX(24px);
+  transition: opacity .4s cubic-bezier(.4,0,.2,1),
+              transform .4s cubic-bezier(.4,0,.2,1),
+              visibility .4s;
+  pointer-events:none;
+  background:var(--white);
+  border:1px solid var(--g200);
+  border-radius:20px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,.04),
+    0 8px 24px rgba(0,0,0,.10),
+    0 20px 48px rgba(0,0,0,.07);
+  padding:32px 32px 28px;
+  display:flex;flex-direction:column;
+  border-top: 3px solid var(--yellow);
+}
+/* Sichtbare (aktive) Karte */
+.rev-card.is-active{
+  opacity:1;
+  visibility:visible;
+  transform:translateX(0);
+  pointer-events:auto;
+}
+/* Austretende Karten nach links/rechts */
+.rev-card.is-exit-left{
+  opacity:0;
+  visibility:hidden;
+  transform:translateX(-24px);
+  pointer-events:none;
+}
+.rev-card.is-exit-right{
+  opacity:0;
+  visibility:hidden;
+  transform:translateX(24px);
+  pointer-events:none;
+}
+/* Hilfsklassen für sofortige Platzierung ohne Transition beim Eintreten */
+.rev-card.is-enter-left{
+  transform:translateX(-24px) !important;
+  transition:none !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+}
+.rev-card.is-enter-right{
+  transform:translateX(24px) !important;
+  transition:none !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+}
+
+/* Anführungszeichen-Dekoration */
+.rev-card::before{
+  content:'„';
+  position:absolute;top:-14px;left:24px;
+  font-family:var(--f-display);font-size:5rem;font-weight:800;
+  line-height:1;color:var(--yellow);opacity:.15;
+  pointer-events:none;user-select:none;
+}
+
+.rev-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.rev-stars{color:var(--yellow);letter-spacing:3px;font-size:1.15rem;line-height:1}
+.rev-gic{width:22px;height:22px}
+.rev-text{
+  margin:0 0 24px;color:var(--g800);font-size:1.05rem;line-height:1.68;
+  flex:1 1 auto;
+}
+.rev-author{
+  display:flex;align-items:center;gap:13px;margin-top:auto;
+  padding-top:18px;border-top:1px solid var(--g100);
+}
+.rev-avatar{
+  width:46px;height:46px;border-radius:50%;flex:0 0 auto;
+  display:grid;place-items:center;background:var(--yellow);
+  color:var(--ink);font-family:var(--f-display);font-weight:700;font-size:1.15rem;line-height:1;
+  box-shadow:0 2px 8px rgba(0,0,0,.18);
+}
+.rev-author-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rev-name{font-weight:700;color:var(--ink);font-size:.95rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rev-lg{
+  font-size:.62rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--g600);background:var(--g100);border:1px solid var(--g200);
+  padding:2px 7px;border-radius:999px;
+}
+.rev-sub{color:var(--g500);font-size:.8rem}
+
+/* Steuerung: Dots links, Pfeile rechts */
+.rev-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:28px}
+.rev-dots{display:flex;align-items:center;gap:9px}
+.rev-dot{
+  width:9px;height:9px;padding:0;border:none;border-radius:999px;
+  background:var(--g300);cursor:pointer;
+  transition:width .3s var(--ease),background .3s var(--ease);
+}
+.rev-dot.active{width:28px;background:var(--yellow-dark)}
+.rev-arrows{display:flex;gap:10px}
+.rev-arrow{
+  width:48px;height:48px;border-radius:50%;flex:0 0 auto;
+  border:1px solid var(--g300);background:var(--white);color:var(--ink);
+  display:grid;place-items:center;cursor:pointer;
+  transition:background .2s var(--ease),border-color .2s var(--ease),transform .2s var(--ease),box-shadow .2s var(--ease);
+}
+.rev-arrow svg{width:22px;height:22px}
+.rev-arrow:hover{
+  background:var(--yellow);border-color:var(--yellow);
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(255,196,0,.35);
+}
+.rev-arrow:active{transform:translateY(0)}
+
+@media(max-width:520px){
+  .rev-controls{flex-direction:column-reverse;gap:18px}
+  .rev-arrows{width:100%;justify-content:center}
+}
 
 /* ---------- Über uns ---------- */
 .about-grid{display:grid;gap:40px}
 @media(min-width:1024px){.about-grid{grid-template-columns:6fr 6fr;align-items:center}}
 .about-photo{
-  border-radius:16px;aspect-ratio:4/3;background:linear-gradient(135deg,#2b2b2b,#1c1c1c);
+  border-radius:16px;overflow:hidden;
   border:1px solid var(--border-dark);
-  display:flex;align-items:center;justify-content:center;color:var(--text-dark-muted);
-  font-size:.9rem;text-align:center;padding:20px;
 }
+.about-photo img{width:100%;height:auto;display:block}
 .dialect{font-style:italic;color:var(--text-dark-muted)}
 
+/* Persönlicher Gruß vom Inhaber */
+.owner-note{
+  display:grid;gap:24px;align-items:center;margin-top:48px;
+  padding:24px;border-radius:16px;border:1px solid var(--border-dark);
+  border-left:3px solid var(--yellow);background:rgba(255,255,255,.02);
+}
+@media(min-width:768px){.owner-note{grid-template-columns:220px 1fr;gap:32px;padding:28px 32px}}
+.owner-photo{width:100%;max-width:220px;height:auto;border-radius:12px;display:block}
+.owner-note-text p{margin:0;color:var(--text-dark-muted)}
+.owner-note-text p:first-child{font-size:1.15rem;line-height:1.6;color:var(--text-dark)}
+.owner-sign{margin-top:16px!important;font-weight:700;color:var(--text-dark)!important}
+.owner-sign span{display:block;font-weight:400;font-size:.9rem;color:var(--text-dark-muted)}
+
 /* ---------- Einzugsgebiet ---------- */
-.einzugsgebiet-map-wrapper {
-  max-width: 1000px;
-  margin: 0 auto;
+.gebiet-grid{display:grid;gap:40px}
+@media(min-width:1024px){
+  .gebiet-grid{grid-template-columns:6fr 5fr;gap:56px;align-items:center}
 }
-.map-img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1408 / 768;
-  object-fit: contain;
-  border-radius: 16px;
-  border: 1px solid var(--g200);
-  box-shadow: var(--sh-soft);
-  display: block;
+
+/* Karte / Consent-Gate */
+.gebiet-map{min-width:0}
+.map-consent,
+.map-consent iframe{
+  width:100%;
+  aspect-ratio:4 / 3;
+  border:0;
+  border-radius:16px;
+  display:block;
 }
+.map-consent{
+  position:relative;
+  background:var(--g100);
+  border:1px solid var(--g200);
+  box-shadow:var(--sh-soft);
+  overflow:hidden;
+}
+.map-consent__inner{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:10px;padding:28px;
+}
+.map-consent__pin{color:var(--yellow-dark)}
+.map-consent__inner h3{margin:0;font-size:1.25rem}
+.map-consent__inner p{margin:0;max-width:34ch;font-size:.9rem;color:var(--g600);line-height:1.5}
+.map-consent__inner .btn{margin-top:4px}
+.map-consent__remember{
+  display:flex;align-items:center;gap:8px;
+  font-size:.82rem;color:var(--g600);cursor:pointer;margin-top:2px;
+}
+.map-consent.is-loaded{background:transparent}
+.map-consent.is-loaded .map-consent__inner{display:none}
+
+.gebiet-addr{
+  margin:14px 2px 0;font-size:.9rem;color:var(--g600);
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;
+}
+.gebiet-rating{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.gebiet-rating .stars{color:var(--yellow-dark);letter-spacing:1px}
+
+/* Info-Spalte */
+.gebiet-info h2{margin-bottom:.45em}
+.gebiet-label{
+  font-family:var(--f-display);font-weight:700;font-size:.78rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--g500);
+  margin:28px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--g200);
+}
+.ort-list{
+  list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:1fr;gap:14px 28px;
+}
+@media(min-width:520px){.ort-list{grid-template-columns:repeat(2,1fr)}}
+.ort-list li{
+  position:relative;padding-left:24px;font-weight:500;color:var(--g800);line-height:1.3;
+}
+.ort-list li::before{
+  content:"→";position:absolute;left:0;top:0;
+  color:var(--yellow-dark);font-weight:700;
+}
+.ort-note{font-weight:400;font-size:.85rem;color:var(--g500)}
+.gebiet-cta-line{margin:28px 0 18px;color:var(--g600)}
 
 /* ---------- Preise ---------- */
 .price-cards .card{text-align:left}
