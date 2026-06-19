@@ -1032,6 +1032,7 @@
           <button type="button" class="quiz-opt" data-value="ca. halb voll"><img class="q-icon" src="assets/icons/fuellstand-2.png" alt=""> Halb voll – man kommt gut durch (ca. ½)</button>
           <button type="button" class="quiz-opt" data-value="ca. 3/4 voll"><img class="q-icon" src="assets/icons/fuellstand-3.png" alt=""> Ziemlich voll – Möbel + viel Hausrat (ca. ¾)</button>
           <button type="button" class="quiz-opt" data-value="komplett voll"><img class="q-icon" src="assets/icons/fuellstand-4.png" alt=""> Sehr voll – bis unter die Decke</button>
+          <button type="button" class="quiz-opt" data-value="Messie / Härtefall"><img class="q-icon" src="assets/icons/messie-wohnung.png" alt=""> Messie / Härtefall</button>
         </div>
         <div class="quiz-nav">
           <button type="button" class="quiz-back" data-back>← Zurück</button>
@@ -1094,7 +1095,7 @@
       <!-- KONTAKT -->
       <div class="quiz-step" data-step="kontakt">
         <h2>Fast geschafft!</h2>
-        <p class="hint">Wohin dürfen wir uns melden? Antwort in 24 Stunden – meist noch am selben Tag.</p>
+        <p class="hint">Wie können wir Sie erreichen? Wir melden uns innerhalb von 24 h. Ihren Preisvorschlag sehen Sie sofort.</p>
         <div class="form-field">
           <label for="name">Ihr Name*</label>
           <input type="text" id="name" autocomplete="name" placeholder="Vor- und Nachname">
@@ -1107,15 +1108,6 @@
           <label for="email">E-Mail (optional)</label>
           <input type="email" id="email" autocomplete="email" placeholder="ihre@email.de">
         </div>
-        <div class="form-field">
-          <label for="rueckruf">Beste Zeit für den Rückruf</label>
-          <select id="rueckruf">
-            <option>egal / jederzeit</option>
-            <option>vormittags</option>
-            <option>nachmittags</option>
-            <option>abends</option>
-          </select>
-        </div>
         <!-- Honeypot -->
         <input type="text" id="firma" name="firma" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
         <label class="checkbox-row">
@@ -1125,7 +1117,7 @@
         </label>
         <div class="quiz-nav">
           <button type="button" class="quiz-back" data-back>← Zurück</button>
-          <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Anfrage absenden – kostenlos &amp; unverbindlich</button>
+          <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Preisvorschlag erhalten – kostenlos &amp; unverbindlich</button>
         </div>
         <p id="formError" style="color:#ff8a8a;font-size:.9rem;margin-top:14px;display:none"></p>
       </div>
@@ -1134,9 +1126,9 @@
       <div class="quiz-step" data-step="danke">
         <div class="quiz-success">
           <div class="check-big">✓</div>
-          <h2>Vielen Dank!</h2>
+          <h2>Vielen Dank – Ihre Einschätzung ist da!</h2>
           <p style="color:var(--text-dark-muted);max-width:46ch;margin:0 auto 20px">
-            Ihre Anfrage ist eingegangen. Wir melden uns <strong style="color:var(--text-dark)">innerhalb von 24 Stunden</strong>.</p>
+            Ihre Anfrage ist eingegangen. Wir melden uns bei Ihnen – <strong style="color:var(--text-dark)">meistens innerhalb von 24 Stunden</strong>.</p>
           
           <!-- Dynamische Preiskachel -->
           <div class="quiz-danke-price">

@@ -94,7 +94,7 @@
       { label: 'klein (Raum/Keller)' }, { label: 'mittel (Wohnung)' }, { label: 'groß (Haus/Halle)' }
     ]}
   };
-  var FUELL_LABELS = ['bis zu 1/4 voll', 'ca. halb voll', 'ca. 3/4 voll', 'komplett voll'];
+  var FUELL_LABELS = ['bis zu 1/4 voll', 'ca. halb voll', 'ca. 3/4 voll', 'komplett voll', 'Messie / Härtefall'];
 
   /* ---------- State & Navigation ---------- */
   var state = JSON.parse(sessionStorage.getItem('rr_quiz') || '{}');
@@ -188,13 +188,15 @@
 
   /* ---------- Preisberechnung (ERWT) ---------- */
   function calcPrice() {
+    // Messie / Härtefall (aus Füllgrad oder Objektart) → immer individuell
+    if (state.fuellgrad === 'Messie / Härtefall') return null;
     var conf = ERWT[state.objekt];
     if (!conf) return null;
     var size = null;
     conf.sizes.forEach(function (s) { if (s.label === state.groesse) size = s; });
     if (!size || !size.v) return null;
     var fi = FUELL_LABELS.indexOf(state.fuellgrad);
-    if (fi < 0) fi = 1;
+    if (fi < 0 || fi > 3) fi = 1; // nur Index 0-3 haben Preiswerte
     var base = size.v[fi];
     var lo = Math.round(base * 0.95 / 10) * 10;
     var hi = Math.round(base * 1.2 / 10) * 10;
@@ -210,7 +212,17 @@
       range.textContent = 'ca. ' + fmt(p.lo) + ' – ' + fmt(p.hi);
       state.einschaetzung = fmt(p.lo) + ' – ' + fmt(p.hi);
     } else {
-      range.textContent = 'Individuelle Einschätzung';
+      var isMessie = state.fuellgrad === 'Messie / Härtefall' || state.objekt === 'Messie-Wohnung';
+      range.textContent = 'Individuelle Einschätzung nötig';
+      // Angepasster Hinweis im Preis-Label
+      var pLabel = document.querySelector('.quiz-danke-price .p-label');
+      if (pLabel && isMessie) {
+        pLabel.textContent = 'Messie / Härtefall – wir besprechen das persönlich:';
+      }
+      var pNote = document.querySelector('.quiz-danke-price .p-note');
+      if (pNote && isMessie) {
+        pNote.textContent = 'Bei besonderen Situationen erstellen wir nach einer kostenlosen Besichtigung ein individuelles Angebot für Sie.';
+      }
       state.einschaetzung = 'individuell (' + (state.objekt || 'Objekt') + ')';
     }
     save();
@@ -241,7 +253,6 @@
     if (!document.getElementById('dsgvo').checked) { err.textContent = 'Bitte stimmen Sie der Datenverarbeitung zu.'; err.style.display = 'block'; return; }
 
     state.name = name; state.tel = tel; state.email = email;
-    state.rueckruf = document.getElementById('rueckruf').value;
     save();
 
     var subject = 'Anfrage: ' + state.objekt + ', ' + state.groesse + ', ' + state.fuellgrad +
@@ -251,7 +262,6 @@
       '  Name:      ' + state.name,
       '  Telefon:   ' + state.tel,
       '  E-Mail:    ' + (state.email || '–'),
-      '  Rückruf:   ' + state.rueckruf,
       '',
       'OBJEKT',
       '  Art:       ' + state.objekt,
