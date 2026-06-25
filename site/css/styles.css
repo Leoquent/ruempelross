@@ -1034,12 +1034,31 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--yellow);
   .main-nav{flex:0}
   .logo img{height:36px}
   .header-cta{margin-left:auto}
-  .hero{height:100svh;min-height:600px;padding:104px 0 64px}
+  .header-cta .btn{display:none} /* Prevent overlap & horizontal overflow on mobile/tablet */
+  .hero{
+    position:relative; /* Disable sticky on mobile to avoid vertical clipping/overlap bugs */
+    height:auto;
+    min-height:100svh;
+    min-height:100dvh;
+    padding:104px 0 64px;
+  }
   .hero .lead{font-size:1.05rem;margin-bottom:18px}
   .hero-checks{gap:8px 24px;margin-bottom:22px}
   .hero-trust{display:none}
   .hero-scroll{display:none}
 }
+
+/* ---------- Short Viewport Adjustments ---------- */
+@media (max-height: 740px) {
+  .hero {
+    position: relative !important;
+    height: auto !important;
+    min-height: 100svh !important;
+    min-height: 100dvh !important;
+    padding: 120px 0 60px !important;
+  }
+}
+
 
 /* ============================================================
    QUIZ – Overlay auf der Startseite

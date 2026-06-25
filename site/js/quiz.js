@@ -39,7 +39,6 @@
       waTextTemplate: 'Hallo RümpelRoss, ich habe gerade die Anfrage gesendet.\n' +
         'Objekt: {objekt} ({groesse}, {fuellgrad})\n' +
         'PLZ: {plz}\n' +
-        'Einschätzung: {einschaetzung}\n' +
         'Hier sind die Fotos für das Angebot:',
       labels: {
         'Wohnung': 'Wohnung',
@@ -105,7 +104,6 @@
       waTextTemplate: 'Hello RümpelRoss, I just submitted the request.\n' +
         'Property: {objekt} ({groesse}, {fuellgrad})\n' +
         'ZIP code: {plz}\n' +
-        'Estimate: {einschaetzung}\n' +
         'Here are the photos for the quote:',
       labels: {
         'Wohnung': 'Flat',
@@ -152,9 +150,53 @@
     }
   };
 
+  /* ---------- WhatsApp Link Prefill Management ---------- */
+  function updateAllWhatsAppLinks() {
+    var completedState = null;
+    try {
+      completedState = JSON.parse(sessionStorage.getItem('rr_quiz_completed'));
+    } catch (e) {}
+    
+    var waLinks = document.querySelectorAll('a[href*="wa.me/"], a[href*="whatsapp.com"], a#dankeWaBtn');
+    
+    if (completedState && completedState.objekt) {
+      var textObj = TRANSLATIONS[lang].labels[completedState.objekt] || completedState.objekt || '';
+      var textSize = TRANSLATIONS[lang].labels[completedState.groesse] || completedState.groesse || '';
+      var textFuell = TRANSLATIONS[lang].labels[completedState.fuellgrad] || completedState.fuellgrad || '';
+      
+      var waText = TRANSLATIONS[lang].waTextTemplate
+        .replace('{objekt}', textObj)
+        .replace('{groesse}', textSize)
+        .replace('{fuellgrad}', textFuell)
+        .replace('{plz}', completedState.plz || '');
+      
+      var newHref = 'https://wa.me/4917642723702?text=' + encodeURIComponent(waText);
+      waLinks.forEach(function (link) {
+        if (!link.getAttribute('data-original-href')) {
+          link.setAttribute('data-original-href', link.href);
+        }
+        link.href = newHref;
+      });
+    } else {
+      waLinks.forEach(function (link) {
+        var orig = link.getAttribute('data-original-href');
+        if (orig) {
+          link.href = orig;
+        }
+      });
+    }
+  }
+
+  // Initial call on script load
+  updateAllWhatsAppLinks();
+
   /* ---------- Overlay öffnen / schließen ---------- */
   var lastFocus = null;
   function openQuiz() {
+    // Clear completed state if starting a new quiz
+    sessionStorage.removeItem('rr_quiz_completed');
+    updateAllWhatsAppLinks();
+
     lastFocus = document.activeElement;
     overlay.classList.add('open');
     document.body.classList.add('quiz-open');
@@ -387,8 +429,7 @@
         .replace('{objekt}', textObj)
         .replace('{groesse}', textSize)
         .replace('{fuellgrad}', textFuell)
-        .replace('{plz}', state.plz)
-        .replace('{einschaetzung}', state.einschaetzung);
+        .replace('{plz}', state.plz);
       
       dankeWaBtn.href = 'https://wa.me/4917642723702?text=' + encodeURIComponent(waText);
     }
@@ -451,6 +492,11 @@
 
     function finish() {
       renderResult(); // Berechne Preis und erstelle WhatsApp-Link
+
+      // Save completed state to sessionStorage
+      sessionStorage.setItem('rr_quiz_completed', JSON.stringify(state));
+      // Update all WhatsApp links on the page with completed answers
+      updateAllWhatsAppLinks();
 
       var sum = document.getElementById('finalSummary');
       sum.innerHTML = '';
