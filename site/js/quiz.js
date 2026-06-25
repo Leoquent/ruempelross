@@ -14,6 +14,144 @@
   var overlay = document.getElementById('quizOverlay');
   if (!overlay) return;
 
+  // Language detection
+  var lang = document.documentElement.lang === 'en' ? 'en' : 'de';
+
+  var TRANSLATIONS = {
+    de: {
+      approx: 'ca. ',
+      indivEst: 'Individuelle Einschätzung nötig',
+      messieLabel: 'Messie / Härtefall – wir besprechen das persönlich:',
+      messieNote: 'Bei besonderen Situationen erstellen wir nach einer kostenlosen Besichtigung ein individuelles Angebot für Sie.',
+      sending: 'Wird gesendet …',
+      alertTermin: 'Bitte wählen Sie einen Zeitraum.',
+      alertPlz: 'Bitte geben Sie eine gültige Postleitzahl ein.',
+      alertName: 'Bitte geben Sie Ihren Namen an.',
+      alertTel: 'Bitte geben Sie eine gültige Telefonnummer an.',
+      alertDsgvo: 'Bitte stimmen Sie der Datenverarbeitung zu.',
+      objekt: 'Objekt',
+      fuellgrad: 'Füllgrad',
+      ort: 'Ort',
+      plzPrefix: 'PLZ ',
+      wunschtermin: 'Wunschtermin',
+      einschaetzung: 'Einschätzung',
+      individuell: 'individuell',
+      waTextTemplate: 'Hallo RümpelRoss, ich habe gerade die Anfrage gesendet.\n' +
+        'Objekt: {objekt} ({groesse}, {fuellgrad})\n' +
+        'PLZ: {plz}\n' +
+        'Einschätzung: {einschaetzung}\n' +
+        'Hier sind die Fotos für das Angebot:',
+      labels: {
+        'Wohnung': 'Wohnung',
+        'Haus': 'Haus',
+        'Keller': 'Keller',
+        'Dachboden': 'Dachboden',
+        'Garage': 'Garage',
+        'Gewerbe': 'Gewerbe / Büro',
+        'Messie-Wohnung': 'Messie-Wohnung',
+        'Sonstiges': 'Sonstiges',
+        'bis zu 1/4 voll': 'bis zu 1/4 voll',
+        'ca. halb voll': 'ca. halb voll',
+        'ca. 3/4 voll': 'ca. 3/4 voll',
+        'komplett voll': 'komplett voll',
+        'Messie / Härtefall': 'Messie / Härtefall',
+        'so schnell wie möglich': 'so schnell wie möglich',
+        'innerhalb 2 Wochen': 'innerhalb 2 Wochen',
+        'in 2 bis 6 Wochen': 'in 2 bis 6 Wochen',
+        'später als 6 Wochen': 'später als 6 Wochen',
+        'unter 50 m²': 'unter 50 m²',
+        '50 – 70 m²': '50 – 70 m²',
+        '70 – 90 m²': '70 – 90 m²',
+        '90 – 110 m²': '90 – 110 m²',
+        'über 110 m²': 'über 110 m²',
+        'einstöckig, unter 100 m²': 'einstöckig, unter 100 m²',
+        'einstöckig, über 100 m²': 'einstöckig, über 100 m²',
+        '1½-stöckig, unter 100 m²': '1½-stöckig, unter 100 m²',
+        '1½-stöckig, über 100 m²': '1½-stöckig, über 100 m²',
+        '2-stöckig, unter 100 m²': '2-stöckig, unter 100 m²',
+        '2-stöckig, über 100 m²': '2-stöckig, über 100 m²',
+        'unter 15 m²': 'unter 15 m²',
+        'über 15 m²': 'über 15 m²',
+        'unter 20 m²': 'unter 20 m²',
+        'über 20 m²': 'über 20 m²',
+        'unter 100 m²': 'unter 100 m²',
+        '100 – 300 m²': '100 – 300 m²',
+        'über 300 m²': 'über 300 m²',
+        '50 – 90 m²': '50 – 90 m²',
+        'über 90 m²': 'über 90 m²',
+        'klein (Raum/Keller)': 'klein (Raum/Keller)',
+        'mittel (Wohnung)': 'mittel (Wohnung)',
+        'groß (Haus/Halle)': 'groß (Haus/Halle)'
+      }
+    },
+    en: {
+      approx: 'approx. ',
+      indivEst: 'Individual assessment required',
+      messieLabel: 'Hoarder / hardship case – we will discuss this personally:',
+      messieNote: 'For special situations, we will provide an individual offer after a free inspection.',
+      sending: 'Sending...',
+      alertTermin: 'Please select a timeframe.',
+      alertPlz: 'Please enter a valid ZIP code.',
+      alertName: 'Please enter your name.',
+      alertTel: 'Please enter a valid phone number.',
+      alertDsgvo: 'Please agree to the data processing.',
+      objekt: 'Property',
+      fuellgrad: 'Volume',
+      ort: 'Location',
+      plzPrefix: 'ZIP code ',
+      wunschtermin: 'Requested date',
+      einschaetzung: 'Estimate',
+      individuell: 'individual',
+      waTextTemplate: 'Hello RümpelRoss, I just submitted the request.\n' +
+        'Property: {objekt} ({groesse}, {fuellgrad})\n' +
+        'ZIP code: {plz}\n' +
+        'Estimate: {einschaetzung}\n' +
+        'Here are the photos for the quote:',
+      labels: {
+        'Wohnung': 'Flat',
+        'Haus': 'House',
+        'Keller': 'Cellar',
+        'Dachboden': 'Attic',
+        'Garage': 'Garage',
+        'Gewerbe': 'Commercial / office',
+        'Messie-Wohnung': 'Hoarder flat',
+        'Sonstiges': 'Other',
+        'bis zu 1/4 voll': 'Up to 1/4 full',
+        'ca. halb voll': 'Approx. half full',
+        'ca. 3/4 voll': 'Approx. 3/4 full',
+        'komplett voll': 'Completely full',
+        'Messie / Härtefall': 'Hoarder / hardship case',
+        'so schnell wie möglich': 'As soon as possible',
+        'innerhalb 2 Wochen': 'Within 2 weeks',
+        'in 2 bis 6 Wochen': 'In 2 to 6 weeks',
+        'später als 6 Wochen': 'Later than 6 weeks',
+        'unter 50 m²': 'under 50 m²',
+        '50 – 70 m²': '50 – 70 m²',
+        '70 – 90 m²': '70 – 90 m²',
+        '90 – 110 m²': '90 – 110 m²',
+        'über 110 m²': 'over 110 m²',
+        'einstöckig, unter 100 m²': 'single-story, under 100 m²',
+        'einstöckig, über 100 m²': 'single-story, over 100 m²',
+        '1½-stöckig, unter 100 m²': '1½-story, under 100 m²',
+        '1½-stöckig, über 100 m²': '1½-story, over 100 m²',
+        '2-stöckig, unter 100 m²': '2-story, under 100 m²',
+        '2-stöckig, über 100 m²': '2-story, over 100 m²',
+        'unter 15 m²': 'under 15 m²',
+        'über 15 m²': 'over 15 m²',
+        'unter 20 m²': 'under 20 m²',
+        'über 20 m²': 'over 20 m²',
+        'unter 100 m²': 'under 100 m²',
+        '100 – 300 m²': '100 – 300 m²',
+        'über 300 m²': 'over 300 m²',
+        '50 – 90 m²': '50 – 90 m²',
+        'über 90 m²': 'over 90 m²',
+        'klein (Raum/Keller)': 'small (room/cellar)',
+        'mittel (Wohnung)': 'medium (flat)',
+        'groß (Haus/Halle)': 'large (house/hall)'
+      }
+    }
+  };
+
   /* ---------- Overlay öffnen / schließen ---------- */
   var lastFocus = null;
   function openQuiz() {
@@ -148,8 +286,8 @@
   });
   document.getElementById('terminNext').addEventListener('click', function () {
     var plz = document.getElementById('plz').value.trim();
-    if (!state.termin) { alert('Bitte wählen Sie einen Zeitraum.'); return; }
-    if (!/^\d{5}$/.test(plz)) { alert('Bitte geben Sie eine gültige Postleitzahl ein.'); return; }
+    if (!state.termin) { alert(TRANSLATIONS[lang].alertTermin); return; }
+    if (!/^\d{5}$/.test(plz)) { alert(TRANSLATIONS[lang].alertPlz); return; }
     state.plz = plz; save(); show(current + 1);
   });
 
@@ -174,7 +312,11 @@
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'quiz-opt';
       b.setAttribute('data-value', s.label);
-      b.innerHTML = '<img class="q-icon" src="assets/icons/quadratmeter.png" alt="" /> ' + s.label;
+      
+      var displayLabel = TRANSLATIONS[lang].labels[s.label] || s.label;
+      var pathPrefix = lang === 'en' ? '../' : '';
+      b.innerHTML = '<img class="q-icon" src="' + pathPrefix + 'assets/icons/quadratmeter.png" alt="" /> ' + displayLabel;
+      
       if (state.groesse === s.label) b.classList.add('selected');
       b.addEventListener('click', function () {
         wrap.querySelectorAll('.quiz-opt').forEach(function (x) { x.classList.remove('selected'); });
@@ -202,39 +344,52 @@
     var hi = Math.round(base * 1.2 / 10) * 10;
     return { lo: lo, hi: hi, base: base };
   }
-  function fmt(n) { return n.toLocaleString('de-DE') + ' €'; }
+  
+  function fmt(n) {
+    if (lang === 'en') {
+      return '€' + n.toLocaleString('en-US');
+    }
+    return n.toLocaleString('de-DE') + ' €';
+  }
 
   function renderResult() {
     var p = calcPrice();
     var range = document.getElementById('dankePriceRange');
     if (!range) return;
     if (p) {
-      range.textContent = 'ca. ' + fmt(p.lo) + ' – ' + fmt(p.hi);
+      range.textContent = TRANSLATIONS[lang].approx + fmt(p.lo) + ' – ' + fmt(p.hi);
       state.einschaetzung = fmt(p.lo) + ' – ' + fmt(p.hi);
     } else {
       var isMessie = state.fuellgrad === 'Messie / Härtefall' || state.objekt === 'Messie-Wohnung';
-      range.textContent = 'Individuelle Einschätzung nötig';
+      range.textContent = TRANSLATIONS[lang].indivEst;
       // Angepasster Hinweis im Preis-Label
       var pLabel = document.querySelector('.quiz-danke-price .p-label');
       if (pLabel && isMessie) {
-        pLabel.textContent = 'Messie / Härtefall – wir besprechen das persönlich:';
+        pLabel.textContent = TRANSLATIONS[lang].messieLabel;
       }
       var pNote = document.querySelector('.quiz-danke-price .p-note');
       if (pNote && isMessie) {
-        pNote.textContent = 'Bei besonderen Situationen erstellen wir nach einer kostenlosen Besichtigung ein individuelles Angebot für Sie.';
+        pNote.textContent = TRANSLATIONS[lang].messieNote;
       }
-      state.einschaetzung = 'individuell (' + (state.objekt || 'Objekt') + ')';
+      var displayObj = TRANSLATIONS[lang].labels[state.objekt] || state.objekt || 'Objekt';
+      state.einschaetzung = TRANSLATIONS[lang].individuell + ' (' + displayObj + ')';
     }
     save();
 
     // Update WhatsApp link on thank you screen with context
     var dankeWaBtn = document.getElementById('dankeWaBtn');
     if (dankeWaBtn) {
-      var waText = 'Hallo RümpelRoss, ich habe gerade die Anfrage gesendet.\n' +
-        'Objekt: ' + state.objekt + ' (' + state.groesse + ', ' + state.fuellgrad + ')\n' +
-        'PLZ: ' + state.plz + '\n' +
-        'Einschätzung: ' + state.einschaetzung + '\n' +
-        'Hier sind die Fotos für das Angebot:';
+      var textObj = TRANSLATIONS[lang].labels[state.objekt] || state.objekt;
+      var textSize = TRANSLATIONS[lang].labels[state.groesse] || state.groesse;
+      var textFuell = TRANSLATIONS[lang].labels[state.fuellgrad] || state.fuellgrad;
+      
+      var waText = TRANSLATIONS[lang].waTextTemplate
+        .replace('{objekt}', textObj)
+        .replace('{groesse}', textSize)
+        .replace('{fuellgrad}', textFuell)
+        .replace('{plz}', state.plz)
+        .replace('{einschaetzung}', state.einschaetzung);
+      
       dankeWaBtn.href = 'https://wa.me/4917642723702?text=' + encodeURIComponent(waText);
     }
   }
@@ -248,9 +403,9 @@
     var err = document.getElementById('formError');
     err.style.display = 'none';
     if (document.getElementById('firma').value) return; // Honeypot
-    if (name.length < 2) { err.textContent = 'Bitte geben Sie Ihren Namen an.'; err.style.display = 'block'; return; }
-    if (tel.replace(/\D/g, '').length < 6) { err.textContent = 'Bitte geben Sie eine gültige Telefonnummer an.'; err.style.display = 'block'; return; }
-    if (!document.getElementById('dsgvo').checked) { err.textContent = 'Bitte stimmen Sie der Datenverarbeitung zu.'; err.style.display = 'block'; return; }
+    if (name.length < 2) { err.textContent = TRANSLATIONS[lang].alertName; err.style.display = 'block'; return; }
+    if (tel.replace(/\D/g, '').length < 6) { err.textContent = TRANSLATIONS[lang].alertTel; err.style.display = 'block'; return; }
+    if (!document.getElementById('dsgvo').checked) { err.textContent = TRANSLATIONS[lang].alertDsgvo; err.style.display = 'block'; return; }
 
     state.name = name; state.tel = tel; state.email = email;
     save();
@@ -278,7 +433,7 @@
     var body = lines.join('\n');
 
     var btn = document.getElementById('submitBtn');
-    btn.disabled = true; btn.textContent = 'Wird gesendet …';
+    btn.disabled = true; btn.textContent = TRANSLATIONS[lang].sending;
 
     fetch(ENDPOINT, {
       method: 'POST',
@@ -299,11 +454,22 @@
 
       var sum = document.getElementById('finalSummary');
       sum.innerHTML = '';
-      [['Objekt', state.objekt + ', ' + state.groesse],
-       ['Füllgrad', state.fuellgrad],
-       ['Ort', 'PLZ ' + state.plz],
-       ['Wunschtermin', state.termin],
-       ['Einschätzung', state.einschaetzung]].forEach(function (row) {
+      
+      var objLabel = TRANSLATIONS[lang].labels[state.objekt] || state.objekt;
+      var sizeLabel = TRANSLATIONS[lang].labels[state.groesse] || state.groesse;
+      var fuellLabel = TRANSLATIONS[lang].labels[state.fuellgrad] || state.fuellgrad;
+      var terminLabel = TRANSLATIONS[lang].labels[state.termin] || state.termin;
+      var einschLabel = state.einschaetzung;
+
+      var rows = [
+        [TRANSLATIONS[lang].objekt, objLabel + ', ' + sizeLabel],
+        [TRANSLATIONS[lang].fuellgrad, fuellLabel],
+        [TRANSLATIONS[lang].ort, TRANSLATIONS[lang].plzPrefix + state.plz],
+        [TRANSLATIONS[lang].wunschtermin, terminLabel],
+        [TRANSLATIONS[lang].einschaetzung, einschLabel]
+      ];
+
+      rows.forEach(function (row) {
         var li = document.createElement('li');
         li.innerHTML = row[0] + ' <b>' + row[1] + '</b>';
         sum.appendChild(li);
