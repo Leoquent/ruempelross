@@ -128,4 +128,24 @@ Statischer Vanilla-Onepager → unkompliziert, **kein i18n-Framework nötig**:
 3. **Copy:** Ich schreibe die englische Copy native-level + SEO-optimiert (empfohlen) — ok für dich?
 4. **Pfad `/en/`** technisch bei deinem Hosting machbar (Unterordner + hreflang)? Bestätigen.
 
-→ Sobald du 1–4 beantwortest, fange ich mit **Phase 0 (Mobile)** an.
+---
+
+## Vorschläge für ein eleganteres Mobile-Menü
+
+Da das aktuelle vollflächig tiefschwarze Menü auf Mobilgeräten etwas klobig wirkt, schlage ich drei elegantere Varianten vor:
+
+### Vorschlag A: Seitlicher Slide-in Drawer (von rechts)
+* **Konzept:** Beim Tippen auf das Hamburger-Icon schiebt sich ein schickes, kompaktes Menü-Panel (Breite ca. 75-80% des Screens) von rechts hinein. Der restliche linke Bereich wird leicht abgedunkelt (Overlay) – ein Tippen darauf schließt das Menü wieder.
+* **Vorteile:** Fühlt sich an wie eine native App, sehr modernes UX-Muster. Die Seite bleibt links schemenhaft sichtbar, wodurch der Nutzer nicht die Orientierung verliert. Die Links rücken näher in Daumenreichweite.
+* **Technik:** `transform: translateX(100%)` im Standard, bei `.nav-open` dann `translateX(0)` mit einer weichen Cubic-Bezier-Transition.
+
+### Vorschlag B: Dropdown-Slide-down unter dem Header (von oben)
+* **Konzept:** Das Menü entfaltet sich direkt unter dem gelben Header nach unten (wie ein Vorhang), während der Header selbst fixiert bleibt. Der Hintergrund darunter wird durch ein CSS-Blur weichgezeichnet.
+* **Vorteile:** Sehr klassisches, stabiles Verhalten, das den Header-Fluss nicht unterbricht. Gut geeignet bei überschaubaren Navigationspunkten.
+* **Technik:** `transform: translateY(-100%)` (oder max-height Transition) unterhalb des Headers, das bei Aktivierung weich nach unten fährt.
+
+### Vorschlag C: Glassmorphic Overlay (Verschwommenes Vollbild)
+* **Konzept:** Wir behalten das Vollbild-Layout bei, ersetzen das deckende Schwarz jedoch durch ein edles, semi-transparentes dunkles Anthrazit (`background: rgba(20,20,20, 0.85)`) kombiniert mit einem starken Weichzeichnungs-Effekt (`backdrop-filter: blur(12px)`).
+* **Vorteile:** Sehr moderner Premium-Look. Wirkt leicht und elegant, da die Farben der Webseite (z. B. der gelbe CTA oder das Hero-Video) kunstvoll verschwommen durchschimmern.
+* **Technik:** CSS `backdrop-filter: blur(12px)` auf der `.main-nav`.
+

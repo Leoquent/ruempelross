@@ -1005,7 +1005,11 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--yellow);
 /* ---------- Mobile Nav ---------- */
 @media(max-width:1023px){
   .main-nav{
-    position:fixed;inset:0;background:var(--ink);flex-direction:column;
+    position:fixed;inset:0;
+    background:rgba(20, 20, 20, 0.85);
+    -webkit-backdrop-filter:blur(12px);
+    backdrop-filter:blur(12px);
+    flex-direction:column;
     justify-content:center;align-items:center;gap:8px;
     opacity:0;pointer-events:none;transition:opacity .25s var(--ease);z-index:-1;
   }
