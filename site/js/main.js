@@ -621,4 +621,47 @@
     startAuto();
   })();
 
+  /* ---------- Einzugsgebiet: Akkordeon für Landkreise ---------- */
+  (function () {
+    var items = document.querySelectorAll('.ort-item[data-accordion]');
+    items.forEach(function (item) {
+      var trigger = item.querySelector('.ort-trigger');
+      var panel = item.querySelector('.ort-panel');
+      if (!trigger || !panel) return;
+
+      trigger.addEventListener('click', function () {
+        var isOpen = item.classList.contains('is-open');
+        
+        // Close other open accordions
+        items.forEach(function (other) {
+          if (other !== item && other.classList.contains('is-open')) {
+            other.classList.remove('is-open');
+            var otherTrigger = other.querySelector('.ort-trigger');
+            if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+            var otherPanel = other.querySelector('.ort-panel');
+            if (otherPanel) otherPanel.style.maxHeight = null;
+          }
+        });
+
+        if (isOpen) {
+          item.classList.remove('is-open');
+          trigger.setAttribute('aria-expanded', 'false');
+          panel.style.maxHeight = null;
+        } else {
+          item.classList.add('is-open');
+          trigger.setAttribute('aria-expanded', 'true');
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+        }
+      });
+    });
+
+    window.addEventListener('resize', function () {
+      var openItem = document.querySelector('.ort-item.is-open[data-accordion]');
+      if (openItem) {
+        var panel = openItem.querySelector('.ort-panel');
+        if (panel) panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    }, { passive: true });
+  })();
+
 })();

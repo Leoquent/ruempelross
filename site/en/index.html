@@ -717,12 +717,72 @@
 
         <p class="gebiet-label">Our service area</p>
         <ul class="ort-list">
-          <li>Stuttgart <span class="ort-note">(all districts)</span></li>
-          <li>Ludwigsburg</li>
-          <li>Esslingen</li>
-          <li>Böblingen</li>
-          <li>Rems-Murr district</li>
-          <li>Göppingen</li>
+          <li class="ort-item" data-accordion>
+            <button type="button" class="ort-trigger" aria-expanded="false" aria-controls="ort-panel-stuttgart">
+              <span>Stuttgart <span class="ort-note">(all districts)</span></span>
+              <span class="ort-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div id="ort-panel-stuttgart" class="ort-panel" role="region" aria-label="Stuttgart districts">
+              <div class="ort-panel-inner">
+                Mitte, Nord, Ost, Süd, West, Bad Cannstatt, Birkach, Botnang, Degerloch, Feuerbach, Hedelfingen, Möhringen, Mühlhausen, Münster, Obertürkheim, Plieningen, Sillenbuch, Stammheim, Untertürkheim, Vaihingen, Wangen, Weilimdorf, Zuffenhausen.
+              </div>
+            </div>
+          </li>
+          <li class="ort-item" data-accordion>
+            <button type="button" class="ort-trigger" aria-expanded="false" aria-controls="ort-panel-ludwigsburg">
+              <span>Ludwigsburg <span class="ort-note">(largest cities & municipalities)</span></span>
+              <span class="ort-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div id="ort-panel-ludwigsburg" class="ort-panel" role="region" aria-label="Ludwigsburg municipalities">
+              <div class="ort-panel-inner">
+                Ludwigsburg, Bietigheim-Bissingen, Kornwestheim, Ditzingen, Remseck am Neckar, Gerlingen, Korntal-Münchingen, Asperg, Vaihingen an der Enz, Freiberg am Neckar, Marbach am Neckar, Tamm.
+              </div>
+            </div>
+          </li>
+          <li class="ort-item" data-accordion>
+            <button type="button" class="ort-trigger" aria-expanded="false" aria-controls="ort-panel-esslingen">
+              <span>Esslingen <span class="ort-note">(largest cities & municipalities)</span></span>
+              <span class="ort-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div id="ort-panel-esslingen" class="ort-panel" role="region" aria-label="Esslingen municipalities">
+              <div class="ort-panel-inner">
+                Esslingen am Neckar, Nürtingen, Filderstadt, Kirchheim unter Teck, Ostfildern, Leinfelden-Echterdingen, Wendlingen am Neckar, Plochingen, Denkendorf, Weilheim an der Teck, Aichtal.
+              </div>
+            </div>
+          </li>
+          <li class="ort-item" data-accordion>
+            <button type="button" class="ort-trigger" aria-expanded="false" aria-controls="ort-panel-boeblingen">
+              <span>Böblingen <span class="ort-note">(largest cities & municipalities)</span></span>
+              <span class="ort-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div id="ort-panel-boeblingen" class="ort-panel" role="region" aria-label="Böblingen municipalities">
+              <div class="ort-panel-inner">
+                Böblingen, Sindelfingen, Leonberg, Herrenberg, Weil der Stadt, Renningen, Gärtringen, Holzgerlingen, Schönaich, Rutesheim, Magstadt.
+              </div>
+            </div>
+          </li>
+          <li class="ort-item" data-accordion>
+            <button type="button" class="ort-trigger" aria-expanded="false" aria-controls="ort-panel-remsmurr">
+              <span>Rems-Murr district <span class="ort-note">(largest cities & municipalities)</span></span>
+              <span class="ort-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div id="ort-panel-remsmurr" class="ort-panel" role="region" aria-label="Rems-Murr municipalities">
+              <div class="ort-panel-inner">
+                Waiblingen, Fellbach, Schorndorf, Backnang, Winnenden, Weinstadt, Kernen im Remstal, Welzheim, Murrhardt, Korb, Urbach.
+              </div>
+            </div>
+          </li>
+          <li class="ort-item" data-accordion>
+            <button type="button" class="ort-trigger" aria-expanded="false" aria-controls="ort-panel-goeppingen">
+              <span>Göppingen <span class="ort-note">(largest cities & municipalities)</span></span>
+              <span class="ort-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div id="ort-panel-goeppingen" class="ort-panel" role="region" aria-label="Göppingen municipalities">
+              <div class="ort-panel-inner">
+                Göppingen, Geislingen an der Steige, Eislingen/Fils, Ebersbach an der Fils, Uhingen, Donzdorf, Süßen, Gingen an der Fils, Rechberghausen, Kuchen.
+              </div>
+            </div>
+          </li>
         </ul>
 
         <p class="gebiet-cta-line">Your town not listed? Just ask – we'll find a solution.</p>
