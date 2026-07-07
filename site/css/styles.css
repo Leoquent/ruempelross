@@ -1598,15 +1598,12 @@ body.quiz-open{overflow:hidden}
   gap: 40px;
   align-items: center;
 }
-.wa-sec-grid > .chat-mockup { order: 2; }
-.wa-sec-grid > :not(.chat-mockup) { order: 1; }
 @media(min-width:1024px) {
   .wa-sec-grid {
     grid-template-columns: 5.5fr 6.5fr;
     gap: 72px;
   }
-  .wa-sec-grid > .chat-mockup { order: 0; }
-  .wa-sec-grid > :not(.chat-mockup) { order: 0; }
+  .wa-sec-grid > .chat-mockup { order: -1; }
 }
 /* Chat-Mockup */
 .chat-mockup {
