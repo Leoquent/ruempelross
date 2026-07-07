@@ -1201,7 +1201,16 @@ blockquote footer{font-size:.9rem;color:var(--g500);margin-top:12px}
   border-left:3px solid var(--yellow);background:rgba(255,255,255,.02);
 }
 @media(min-width:768px){.owner-note{grid-template-columns:220px 1fr;gap:32px;padding:28px 32px}}
-.owner-photo{width:100%;max-width:220px;height:auto;border-radius:12px;display:block}
+.owner-photo{
+  width:100%;height:auto;border-radius:12px;display:block;
+  object-fit:cover;object-position:top;
+}
+@media(max-width:767px){
+  .owner-photo{aspect-ratio:3/2;max-width:none}
+}
+@media(min-width:768px){
+  .owner-photo{max-width:220px}
+}
 .owner-note-text p{margin:0;color:var(--text-dark-muted)}
 .owner-note-text p:first-child{font-size:1.15rem;line-height:1.6;color:var(--text-dark)}
 .owner-sign{margin-top:16px!important;font-weight:700;color:var(--text-dark)!important}
