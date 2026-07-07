@@ -138,9 +138,9 @@
     // Pfad relativ zur Seite auflösen (EN-Seite liegt in /en/)
     var PREFIX = document.documentElement.lang === 'en' ? '../' : '';
     var BASE = PREFIX + 'assets/video_seq/ezgif-frame-';
-    // Nur jeder 2. Frame (001, 003, … 097) – halbiert die Datenmenge, optisch kein Unterschied
+    // Alle 97 Frames für maximale Scroll-Smoothness (Original-Auflösung).
     var FRAME_FILES = [];
-    for (var fn = 1; fn <= 97; fn += 2) FRAME_FILES.push(fn);
+    for (var fn = 1; fn <= 97; fn++) FRAME_FILES.push(fn);
     var FRAMES = FRAME_FILES.length;
     var imgs = new Array(FRAMES), ready = false, lastIdx = -1, raf = false;
     var reducedMo = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
