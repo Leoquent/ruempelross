@@ -1179,9 +1179,27 @@ blockquote footer{font-size:.9rem;color:var(--g500);margin-top:12px}
 }
 .rev-arrow:active{transform:translateY(0)}
 
-@media(max-width:520px){
-  .rev-controls{flex-direction:column-reverse;gap:18px}
-  .rev-arrows{width:100%;justify-content:center}
+@media(max-width:919px){
+  .rev-controls{justify-content:center;margin-top:20px}
+  .rev-dots{margin:0 auto}
+  .rev-arrows{
+    position:absolute;
+    top:calc(50% - 24px); /* centered vertically on the viewport, compensating for dots */
+    left:-8px;
+    right:-8px;
+    display:flex;
+    justify-content:space-between;
+    width:calc(100% + 16px);
+    pointer-events:none;
+    z-index:10;
+  }
+  .rev-arrow{
+    pointer-events:auto;
+    width:42px;
+    height:42px;
+    background:rgba(255,255,255,.96);
+    box-shadow:0 4px 12px rgba(0,0,0,.12);
+  }
 }
 
 /* ---------- Über uns ---------- */
