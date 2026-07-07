@@ -2,41 +2,34 @@
 (function () {
   'use strict';
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var openProjectModal = null;
+  var activeSlider = null;
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var dragDirection = null;
+  var isTouchMode = false;
+
+  function setPos(slider, clientX) {
+    var after = slider.querySelector('.ba-after');
+    var handle = slider.querySelector('.ba-handle');
+    if (!after || !handle) return;
+    var r = slider.getBoundingClientRect();
+    var pct = Math.min(Math.max((clientX - r.left) / r.width, 0.05), 0.95) * 100;
+    after.style.clipPath = 'inset(0 0 0 ' + pct + '%)';
+    handle.style.left = pct + '%';
+  }
+
 
   /* ---------- Header Scroll-State ---------- */
   var header = document.getElementById('header');
+  // Unterseiten ohne dunklen Video-Hero: Header bleibt dauerhaft im
+  // "scrolled"-Zustand (gelb, dunkle Schrift) – via data-solid am <header>.
+  var solidHeader = header && header.hasAttribute('data-solid');
   function onScroll() {
-    header.classList.toggle('scrolled', window.scrollY > 80);
+    header.classList.toggle('scrolled', solidHeader || window.scrollY > 80);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
-
-  /* ---------- Parallax Scrolling ---------- */
-  if (!reduced) {
-    var parallaxEls = document.querySelectorAll('[data-parallax]');
-    var tickingParallax = false;
-    function updateParallax() {
-      tickingParallax = false;
-      var vh = window.innerHeight;
-      parallaxEls.forEach(function (el) {
-        var speed = parseFloat(el.getAttribute('data-parallax-speed') || 0.08);
-        var parent = el.parentElement;
-        if (!parent) return;
-        var parentRect = parent.getBoundingClientRect();
-        if (parentRect.top < vh && parentRect.bottom > 0) {
-          var yPos = -(parentRect.top * speed);
-          el.style.transform = 'translate3d(0, ' + yPos + 'px, 0)';
-        }
-      });
-    }
-    window.addEventListener('scroll', function () {
-      if (!tickingParallax) {
-        tickingParallax = true;
-        requestAnimationFrame(updateParallax);
-      }
-    }, { passive: true });
-    setTimeout(updateParallax, 50);
-  }
 
   /* ---------- Mobile Nav ---------- */
   var toggle = document.querySelector('.nav-toggle');
@@ -67,8 +60,13 @@
       s.style.animationDelay = (0.08 * i) + 's';
       h1.appendChild(s);
       if (i < words.length - 1) {
-        // Nach einem Wort mit Komma in die nächste Zeile umbrechen
-        h1.appendChild(/,$/.test(w) ? document.createElement('br') : document.createTextNode(' '));
+        // Nach einem Wort mit Komma in die nächste Zeile umbrechen (auf mobile via CSS ausgeblendet)
+        if (/,$/.test(w)) {
+          h1.appendChild(document.createTextNode(' '));
+          h1.appendChild(document.createElement('br'));
+        } else {
+          h1.appendChild(document.createTextNode(' '));
+        }
       }
     });
   }
@@ -137,10 +135,15 @@
     var sec = document.getElementById('ablauf');
     if (!canvas || !sec) return;
     var ctx = canvas.getContext('2d');
-    var FRAMES = 97, BASE = 'assets/video_seq/ezgif-frame-';
+    // Pfad relativ zur Seite auflösen (EN-Seite liegt in /en/)
+    var PREFIX = document.documentElement.lang === 'en' ? '../' : '';
+    var BASE = PREFIX + 'assets/video_seq/ezgif-frame-';
+    // Nur jeder 2. Frame (001, 003, … 097) – halbiert die Datenmenge, optisch kein Unterschied
+    var FRAME_FILES = [];
+    for (var fn = 1; fn <= 97; fn += 2) FRAME_FILES.push(fn);
+    var FRAMES = FRAME_FILES.length;
     var imgs = new Array(FRAMES), ready = false, lastIdx = -1, raf = false;
     var reducedMo = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var mqDesktop = window.matchMedia('(min-width:1024px)');
 
     function draw(idx) {
       var img = imgs[idx];
@@ -187,33 +190,18 @@
       if (idx !== lastIdx) draw(idx);
     }
     function onScroll() {
-      // Use clip-path to restrict the fixed canvas to the section's visible area
-      var r = sec.getBoundingClientRect();
-      var vh = window.innerHeight;
-      var headerH = header ? header.offsetHeight : 60;
-      var pin = document.querySelector('.ablauf-bg-pin');
-      if (pin) {
-        var clipTop    = Math.max(r.top - headerH, 0);
-        var clipBottom = Math.max(vh - r.bottom, 0);
-        if (r.top > vh || r.bottom < headerH) {
-          pin.style.clipPath = 'inset(0 0 100% 0)'; // fully hidden outside section
-        } else {
-          pin.style.clipPath = 'inset(' + clipTop + 'px 0px ' + clipBottom + 'px 0px)';
-        }
-      }
-
+      // Sichtbarkeit wird rein per CSS geclippt (.ablauf-bg · clip-path);
+      // hier nur noch den passenden Frame rendern.
       if (ready && !raf) { raf = true; requestAnimationFrame(render); }
     }
     function preload() {
       ready = true;
-      for (var i = 1; i <= FRAMES; i++) {
-        (function (n) {
-          var im = new Image();
-          im.onload = function () { lastIdx = -1; render(); };
-          im.src = BASE + ('00' + n).slice(-3) + '.jpg';
-          imgs[n - 1] = im;
-        })(i);
-      }
+      FRAME_FILES.forEach(function (fileNo, i) {
+        var im = new Image();
+        im.onload = function () { lastIdx = -1; render(); };
+        im.src = BASE + ('00' + fileNo).slice(-3) + '.jpg';
+        imgs[i] = im;
+      });
     }
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (es) {
@@ -223,35 +211,90 @@
     } else { preload(); }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', function () { lastIdx = -1; onScroll(); }, { passive: true });
-    onScroll(); // Initiale Positionierung
+    onScroll(); // Initiales Rendering
   })();
 
-  /* ---------- Vorher/Nachher-Slider ---------- */
-  var slider = document.getElementById('baSlider');
-  if (slider) {
-    var after = slider.querySelector('.ba-after');
-    var handle = slider.querySelector('.ba-handle');
-    function setPos(clientX) {
-      var r = slider.getBoundingClientRect();
-      var pct = Math.min(Math.max((clientX - r.left) / r.width, 0.05), 0.95) * 100;
-      after.style.clipPath = 'inset(0 0 0 ' + pct + '%)';
-      handle.style.left = pct + '%';
-    }
-    var dragging = false;
-    function start(e) { dragging = true; move(e); }
-    function move(e) {
-      if (!dragging) return;
-      setPos(e.touches ? e.touches[0].clientX : e.clientX);
-      e.preventDefault();
-    }
-    function end() { dragging = false; }
-    slider.addEventListener('mousedown', start);
-    slider.addEventListener('touchstart', start, { passive: false });
-    window.addEventListener('mousemove', move);
-    window.addEventListener('touchmove', move, { passive: false });
-    slider.addEventListener('mouseup', end);
-    slider.addEventListener('touchend', end);
+  /* ---------- Vorher/Nachher-Slider & Showcase-Tabs ---------- */
+  var sliders = document.querySelectorAll('.ba-slider');
+
+  if (sliders.length > 0) {
+    sliders.forEach(function (slider) {
+      slider.addEventListener('mousedown', function (e) {
+        isTouchMode = false;
+        activeSlider = slider;
+        setPos(slider, e.clientX);
+      });
+      slider.addEventListener('touchstart', function (e) {
+        isTouchMode = true;
+        activeSlider = slider;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        dragDirection = null;
+      }, { passive: true });
+    });
+
+    window.addEventListener('mousemove', function (e) {
+      if (activeSlider && !isTouchMode) {
+        setPos(activeSlider, e.clientX);
+      }
+    });
+
+    window.addEventListener('touchmove', function (e) {
+      if (!activeSlider || !isTouchMode) return;
+
+      var touch = e.touches[0];
+      var dx = touch.clientX - touchStartX;
+      var dy = touch.clientY - touchStartY;
+      var absDx = Math.abs(dx);
+      var absDy = Math.abs(dy);
+
+      if (dragDirection === null) {
+        if (absDx > 6 || absDy > 6) {
+          if (absDx > absDy) {
+            dragDirection = 'horizontal';
+          } else {
+            dragDirection = 'vertical';
+            activeSlider = null; // Release slider to allow normal page scrolling
+          }
+        }
+      }
+
+      if (dragDirection === 'horizontal') {
+        setPos(activeSlider, touch.clientX);
+        if (e.cancelable) {
+          e.preventDefault(); // Prevent page scroll
+        }
+      }
+    }, { passive: false });
+
+    window.addEventListener('mouseup', function () {
+      activeSlider = null;
+    });
+
+    window.addEventListener('touchend', function (e) {
+      if (activeSlider && isTouchMode) {
+        var touch = e.changedTouches[0];
+        var dx = touch.clientX - touchStartX;
+        var dy = touch.clientY - touchStartY;
+        var absDx = Math.abs(dx);
+        var absDy = Math.abs(dy);
+
+        // Tap detection (minimal movement)
+        if (absDx < 8 && absDy < 8) {
+          var project = activeSlider.closest('.showcase-project');
+          if (project && !activeSlider.closest('.project-modal-container') && window.innerWidth < 768) {
+            if (typeof openProjectModal === 'function') {
+              openProjectModal(project);
+            }
+          }
+        }
+      }
+      activeSlider = null;
+      dragDirection = null;
+    });
   }
+
+
 
   /* ---------- Kicker City Loop ---------- */
   var kickerWrapper = document.querySelector('.kicker-city-wrapper');
@@ -662,6 +705,195 @@
         if (panel) panel.style.maxHeight = panel.scrollHeight + 'px';
       }
     }, { passive: true });
+  })();
+
+  /* ---------- Ergebnisse Showcase: Projekt-Details Modal ---------- */
+  (function () {
+    var projects = document.querySelectorAll('.showcase-project');
+    if (projects.length === 0) return;
+
+    // Create modal element
+    var modalOverlay = document.createElement('div');
+    modalOverlay.className = 'project-modal-overlay';
+    modalOverlay.id = 'projectDetailsModal';
+    modalOverlay.setAttribute('role', 'dialog');
+    modalOverlay.setAttribute('aria-modal', 'true');
+    modalOverlay.setAttribute('aria-hidden', 'true');
+
+    // Create inner structure
+    modalOverlay.innerHTML =
+      '<div class="project-modal-container">' +
+        '<button type="button" class="project-modal-close-btn" aria-label="Schließen">' +
+          '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+            '<line x1="18" y1="6" x2="6" y2="18"></line>' +
+            '<line x1="6" y1="6" x2="18" y2="18"></line>' +
+          '</svg>' +
+        '</button>' +
+        '<div class="project-modal-content">' +
+          '<div class="project-modal-slider-col">' +
+            '<!-- Slider will be inserted here -->' +
+          '</div>' +
+          '<div class="project-modal-details-col">' +
+            '<div>' +
+              '<div class="project-modal-meta-top">' +
+                '<span class="project-modal-num"></span>' +
+                '<span class="project-modal-category"></span>' +
+              '</div>' +
+              '<h3 class="project-modal-title"></h3>' +
+              '<div class="project-modal-body"></div>' +
+            '</div>' +
+            '<a href="" class="project-modal-cta btn btn-primary"></a>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(modalOverlay);
+
+    var closeBtn = modalOverlay.querySelector('.project-modal-close-btn');
+    var sliderCol = modalOverlay.querySelector('.project-modal-slider-col');
+    var modalNum = modalOverlay.querySelector('.project-modal-num');
+    var modalCat = modalOverlay.querySelector('.project-modal-category');
+    var modalTitle = modalOverlay.querySelector('.project-modal-title');
+    var modalBody = modalOverlay.querySelector('.project-modal-body');
+    var modalCta = modalOverlay.querySelector('.project-modal-cta');
+
+    // Find lang
+    var isEnglish = document.documentElement.lang === 'en';
+    if (closeBtn) {
+      closeBtn.setAttribute('aria-label', isEnglish ? 'Close' : 'Schließen');
+    }
+
+    function openModal(project) {
+      // 1. Get info
+      var number = project.querySelector('.project-number') ? project.querySelector('.project-number').innerText : '';
+      var title = project.querySelector('.project-title-meta h3') ? project.querySelector('.project-title-meta h3').innerText : '';
+      var shortMeta = project.querySelector('.project-short-meta') ? project.querySelector('.project-short-meta').innerText : '';
+
+      // Split shortMeta to get the category (first part before dot)
+      var category = '';
+      if (shortMeta) {
+        var parts = shortMeta.split('·');
+        category = parts[0].trim();
+      }
+
+      // Details HTML
+      var listHtml = project.querySelector('.project-meta-list') ? project.querySelector('.project-meta-list').outerHTML : '';
+      var descHtml = project.querySelector('.project-details-expand .expand-inner p') ? project.querySelector('.project-details-expand .expand-inner p').outerHTML : '';
+      if (!descHtml) {
+        descHtml = project.querySelector('.project-details-expand p') ? project.querySelector('.project-details-expand p').outerHTML : '';
+      }
+      var ctaEl = project.querySelector('.project-cta-link');
+      var ctaText = ctaEl ? ctaEl.innerText : (isEnglish ? 'Request similar project →' : 'Ähnliches Projekt anfragen →');
+      var ctaHref = ctaEl ? ctaEl.getAttribute('href') : '#kontakt';
+
+      // 2. Insert text
+      modalNum.innerText = number;
+      modalCat.innerText = category;
+      modalTitle.innerText = title;
+      modalBody.innerHTML = listHtml + descHtml;
+      modalCta.innerText = ctaText;
+      modalCta.setAttribute('href', ctaHref);
+
+      // 3. Build Slider
+      var beforeImg = project.querySelector('.ba-before img');
+      var afterImg = project.querySelector('.ba-after img');
+      if (beforeImg && afterImg) {
+        sliderCol.innerHTML =
+          '<div class="ba-slider" aria-label="Vorher-Nachher-Vergleich">' +
+            '<div class="ba-img ba-before"><img src="' + beforeImg.getAttribute('src') + '" alt="' + beforeImg.alt + '"></div>' +
+            '<div class="ba-img ba-after"><img src="' + afterImg.getAttribute('src') + '" alt="' + afterImg.alt + '"></div>' +
+            '<span class="ba-label before">' + (isEnglish ? 'Before' : 'Vorher') + '</span>' +
+            '<span class="ba-label after">' + (isEnglish ? 'After' : 'Nachher') + '</span>' +
+            '<div class="ba-handle"></div>' +
+          '</div>';
+
+        // Initialize drag events for this specific slider
+        var newSlider = sliderCol.querySelector('.ba-slider');
+        initModalSlider(newSlider);
+      } else {
+        sliderCol.innerHTML = '';
+      }
+
+      // 4. Show modal
+      modalOverlay.classList.add('open');
+      modalOverlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('project-modal-open');
+
+      // Focus close button
+      if (closeBtn) closeBtn.focus();
+    }
+
+    // Expose the openModal function to shared scope
+    openProjectModal = openModal;
+
+    function closeModal() {
+      modalOverlay.classList.remove('open');
+      modalOverlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('project-modal-open');
+    }
+
+    function initModalSlider(slider) {
+      slider.addEventListener('mousedown', function (e) {
+        isTouchMode = false;
+        activeSlider = slider;
+        setPos(slider, e.clientX);
+      });
+      slider.addEventListener('touchstart', function (e) {
+        isTouchMode = true;
+        activeSlider = slider;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        dragDirection = null;
+      }, { passive: true });
+    }
+
+    // Close triggers
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', function (e) {
+      if (e.target === modalOverlay) closeModal();
+    });
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modalOverlay.classList.contains('open')) {
+        closeModal();
+      }
+    });
+
+    // CTA in modal closes the modal
+    modalCta.addEventListener('click', function () {
+      closeModal();
+    });
+
+    // Add click listeners to project cards
+    projects.forEach(function (project) {
+      var header = project.querySelector('.project-header');
+      if (header) {
+        header.addEventListener('click', function (e) {
+          if (window.innerWidth >= 768) {
+            openModal(project);
+          }
+        });
+      }
+
+      // Mobile click/tap handler on the whole card
+      var tapStartX = 0;
+      var tapStartY = 0;
+      project.addEventListener('touchstart', function (e) {
+        tapStartX = e.touches[0].clientX;
+        tapStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      project.addEventListener('touchend', function (e) {
+        if (window.innerWidth < 768) {
+          var dx = e.changedTouches[0].clientX - tapStartX;
+          var dy = e.changedTouches[0].clientY - tapStartY;
+          // Only trigger openModal if it's a click/tap (minimal movement)
+          // and they clicked on the header or slider card (excluding active drags)
+          if (Math.abs(dx) < 8 && Math.abs(dy) < 8) {
+            openModal(project);
+          }
+        }
+      });
+    });
   })();
 
 })();

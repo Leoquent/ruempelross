@@ -24,6 +24,9 @@
       messieLabel: 'Messie / Härtefall – wir besprechen das persönlich:',
       messieNote: 'Bei besonderen Situationen erstellen wir nach einer kostenlosen Besichtigung ein individuelles Angebot für Sie.',
       sending: 'Wird gesendet …',
+      sendFailed: 'Ihre Anfrage konnte gerade nicht übertragen werden. Bitte versuchen Sie es noch einmal – ' +
+        'oder rufen Sie uns direkt an: <a href="tel:+4971123178489" style="color:#fff">0711 23178489</a>. ' +
+        'Alternativ: <a href="{mailto}" style="color:#fff">Anfrage per E-Mail senden</a> (Text ist vorbereitet).',
       alertTermin: 'Bitte wählen Sie einen Zeitraum.',
       alertPlz: 'Bitte geben Sie eine gültige Postleitzahl ein.',
       alertName: 'Bitte geben Sie Ihren Namen an.',
@@ -89,6 +92,9 @@
       messieLabel: 'Hoarder / hardship case – we will discuss this personally:',
       messieNote: 'For special situations, we will provide an individual offer after a free inspection.',
       sending: 'Sending...',
+      sendFailed: 'Your request could not be transmitted. Please try again – ' +
+        'or call us directly: <a href="tel:+4971123178489" style="color:#fff">0711 23178489</a>. ' +
+        'Alternatively: <a href="{mailto}" style="color:#fff">send your request by e-mail</a> (text is pre-filled).',
       alertTermin: 'Please select a timeframe.',
       alertPlz: 'Please enter a valid ZIP code.',
       alertName: 'Please enter your name.',
@@ -218,6 +224,21 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && overlay.classList.contains('open')) closeQuiz();
   });
+  /* Fokus-Falle: Tab bleibt innerhalb des geöffneten Overlays */
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab' || !overlay.classList.contains('open')) return;
+    var focusables = Array.prototype.filter.call(
+      overlay.querySelectorAll('button, [href], input, select, textarea'),
+      function (el) { return !el.disabled && el.getClientRects().length > 0; }
+    );
+    if (!focusables.length) return;
+    var first = focusables[0], last = focusables[focusables.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !overlay.contains(document.activeElement))) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && (document.activeElement === last || !overlay.contains(document.activeElement))) {
+      e.preventDefault(); first.focus();
+    }
+  });
   /* Direktlink (index.html#anfrage) öffnet das Overlay sofort */
   if (window.location.hash === '#anfrage') openQuiz();
   window.addEventListener('hashchange', function () {
@@ -318,18 +339,28 @@
 
   /* Termin: Auswahl ohne Auto-Weiter (PLZ-Feld darunter) */
   var terminStep = overlay.querySelector('[data-step="termin"]');
+  var terminErr = document.getElementById('terminError');
+  function showTerminError(msg) {
+    if (terminErr) { terminErr.textContent = msg; terminErr.style.display = 'block'; }
+    else { alert(msg); }
+  }
+  function hideTerminError() {
+    if (terminErr) terminErr.style.display = 'none';
+  }
   terminStep.querySelectorAll('.quiz-opt').forEach(function (btn) {
     btn.addEventListener('click', function () {
       terminStep.querySelectorAll('.quiz-opt').forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       state.termin = btn.getAttribute('data-value');
+      hideTerminError();
       save();
     });
   });
   document.getElementById('terminNext').addEventListener('click', function () {
     var plz = document.getElementById('plz').value.trim();
-    if (!state.termin) { alert(TRANSLATIONS[lang].alertTermin); return; }
-    if (!/^\d{5}$/.test(plz)) { alert(TRANSLATIONS[lang].alertPlz); return; }
+    if (!state.termin) { showTerminError(TRANSLATIONS[lang].alertTermin); return; }
+    if (!/^\d{5}$/.test(plz)) { showTerminError(TRANSLATIONS[lang].alertPlz); return; }
+    hideTerminError();
     state.plz = plz; save(); show(current + 1);
   });
 
@@ -474,6 +505,7 @@
     var body = lines.join('\n');
 
     var btn = document.getElementById('submitBtn');
+    var btnLabel = btn.textContent;
     btn.disabled = true; btn.textContent = TRANSLATIONS[lang].sending;
 
     fetch(ENDPOINT, {
@@ -484,10 +516,13 @@
       if (!r.ok) throw new Error('send failed');
       finish();
     }).catch(function () {
-      // Fallback: E-Mail-Programm öffnen
-      window.location.href = 'mailto:' + MAIL_TO + '?subject=' +
+      // Ehrlich bleiben: kein Danke-Screen, wenn nichts übertragen wurde.
+      // Stattdessen Fehlermeldung mit Telefon- und vorbereitetem E-Mail-Link.
+      btn.disabled = false; btn.textContent = btnLabel;
+      var mailHref = 'mailto:' + MAIL_TO + '?subject=' +
         encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      finish();
+      err.innerHTML = TRANSLATIONS[lang].sendFailed.replace('{mailto}', mailHref);
+      err.style.display = 'block';
     });
 
     function finish() {

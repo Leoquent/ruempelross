@@ -3,13 +3,27 @@
    Tokens aus tokens.txt · Konzept aus design.md
    ============================================================ */
 
+/* ---------- Fonts (selbst gehostet – DSGVO, kein Google-Request) ---------- */
+@font-face{font-family:'Barlow';font-style:normal;font-weight:400;font-display:swap;
+  src:url('../assets/fonts/barlow-400.woff2') format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:500;font-display:swap;
+  src:url('../assets/fonts/barlow-500.woff2') format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:600;font-display:swap;
+  src:url('../assets/fonts/barlow-600.woff2') format('woff2')}
+@font-face{font-family:'Barlow Semi Condensed';font-style:normal;font-weight:600;font-display:swap;
+  src:url('../assets/fonts/barlow-semi-condensed-600.woff2') format('woff2')}
+@font-face{font-family:'Barlow Semi Condensed';font-style:normal;font-weight:700;font-display:swap;
+  src:url('../assets/fonts/barlow-semi-condensed-700.woff2') format('woff2')}
+@font-face{font-family:'Barlow Semi Condensed';font-style:normal;font-weight:800;font-display:swap;
+  src:url('../assets/fonts/barlow-semi-condensed-800.woff2') format('woff2')}
+
 :root{
   /* Farben */
   --yellow:#FFC400; --yellow-dark:#E09600; --yellow-tint:#FFF1C2;
   --ink:#141414; --ink-soft:#1F1F1F; --ink-raised:#262626;
   --white:#fff;
   --g50:#FAFAF8; --g100:#F2F1EE; --g200:#E4E2DD; --g300:#D4D1CB;
-  --g400:#B5B2AC; --g500:#908D88; --g600:#6E6B66; --g800:#34322F; --g900:#1C1B19;
+  --g400:#B5B2AC; --g500:#908D88; --g600:#6E6B66; --g700:#4A4843; --g800:#34322F; --g900:#1C1B19;
   --border-dark:rgba(255,255,255,.08);
   --text-dark:rgba(255,255,255,.85); --text-dark-muted:rgba(255,255,255,.55);
   --focus:rgba(255,196,0,.35);
@@ -62,6 +76,16 @@ section{padding:var(--sec-y) 0}
   text-transform:uppercase;color:var(--g600);margin-bottom:14px;
 }
 .sec-dark .kicker{color:var(--yellow)}
+.hero .kicker {
+  white-space: nowrap;
+  font-size: clamp(0.55rem, 3.2vw, 0.8rem);
+}
+@media (max-width: 767px) {
+  /* Dekorative Desktop-Umbrüche auf schmalen Screens natürlich fließen lassen */
+  .hero h1 br,
+  .hero .lead br,
+  h2 br { display: none; }
+}
 
 /* Dynamischer Kicker Einzugsgebiete */
 .kicker-city-wrapper {
@@ -309,6 +333,15 @@ section{padding:var(--sec-y) 0}
 .hero-checks{list-style:none;display:grid;gap:12px 28px;padding:0;margin:0 0 36px}
 @media(min-width:640px){.hero-checks{grid-template-columns:auto auto;justify-content:start;}}
 .hero-checks li{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--g800)}
+.hero-checks li.usp-highlight {
+  color: var(--yellow) !important;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.hero-checks li.usp-highlight .check {
+  box-shadow: 0 0 10px rgba(255, 196, 0, 0.6);
+  transform: scale(1.1);
+}
 .check{
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
   background:var(--yellow);color:var(--ink);
@@ -394,9 +427,11 @@ section{padding:var(--sec-y) 0}
 #ablauf{position:relative}
 .ablauf-content{position:relative;z-index:1}
 .ablauf-grid{display:grid;grid-template-columns:1fr;gap:40px}
-/* Hintergrund-Ebene: spannt die ganze Sektion (oben/unten bündig) */
-.ablauf-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.ablauf-bg-pin{position:fixed;top:60px;left:0;right:0;bottom:0;will-change:clip-path}
+/* Hintergrund-Ebene: spannt die ganze Sektion (oben/unten bündig).
+   clip-path beschneidet auch das fixed-Kind nativ im Compositor –
+   ohne den 1-Frame-Lag eines JS-Scroll-Handlers (Jitter-Fix). */
+.ablauf-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;clip-path:inset(0)}
+.ablauf-bg-pin{position:fixed;top:0;left:0;right:0;bottom:0}
 .ablauf-canvas{display:block;width:100%;height:100%}
 
 /* Mobile: Video mit Overlay für Lesbarkeit */
@@ -463,37 +498,54 @@ section{padding:var(--sec-y) 0}
 /* ---------- Trust Ticker ---------- */
 .trust-ticker-sec {
   background: var(--g50);
-  padding: 36px 0;
+  height: 107px !important;
+  min-height: 107px !important;
+  max-height: 107px !important;
+  padding: 0 !important;
   border-top: 1px solid var(--g200);
   border-bottom: 1px solid var(--g200);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .ticker-wrap {
   width: 100%;
   position: relative;
   overflow: visible;
+  height: 35px !important;
+  min-height: 35px !important;
+  max-height: 35px !important;
 }
 .ticker {
   display: flex;
   width: max-content;
+  height: 35px !important;
+  min-height: 35px !important;
+  max-height: 35px !important;
   align-items: center;
   animation: ticker 30s linear infinite;
   will-change: transform;
 }
+.ticker-wrap:hover .ticker {
+  animation-play-state: paused;
+}
 .ticker-item {
   display: flex;
+  height: 35px !important;
+  min-height: 35px !important;
+  max-height: 35px !important;
   align-items: center;
   user-select: none;
   margin-right: 60px;
 }
 .ticker-logo {
-  height: 35px;
+  height: 35px !important;
   width: auto;
   object-fit: contain;
   display: block;
   filter: grayscale(1) brightness(0.2) opacity(0.4);
   transition: filter 0.25s var(--ease), opacity 0.25s var(--ease), transform 0.25s var(--ease);
-  will-change: filter, opacity, transform;
 }
 .ticker-logo:hover {
   filter: grayscale(0) brightness(1) opacity(0.95);
@@ -615,6 +667,326 @@ section{padding:var(--sec-y) 0}
 /* ---------- Vorher/Nachher ---------- */
 .ba-wrap{display:grid;gap:32px}
 @media(min-width:1024px){.ba-wrap{grid-template-columns:7fr 5fr;align-items:center}}
+
+/* ---------- Ergebnisse Showcase (3×2 Grid) ---------- */
+.showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media(min-width:640px) { .showcase-grid { grid-template-columns: 1fr 1fr; } }
+@media(min-width:1024px) { .showcase-grid { grid-template-columns: repeat(3, 1fr); gap: 28px; } }
+
+.showcase-project {
+  background: var(--white);
+  border: 1px solid var(--g200);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--sh-card);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.showcase-project:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-lift);
+}
+
+/* Slider sits inside the card, full width, with reduced aspect-ratio */
+.showcase-project .ba-slider {
+  border-radius: 0;
+  aspect-ratio: 16/10;
+}
+
+/* Override the ba-wrap inside showcase cards to always stack vertically */
+.showcase-project .ba-wrap {
+  display: block;
+}
+
+.project-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+.project-number {
+  font-family: var(--f-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--g400);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.project-title-meta {
+  flex: 1;
+  min-width: 0;
+}
+.project-title-meta h3 {
+  font-size: 1.05rem;
+  margin: 0 0 3px 0;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.project-short-meta {
+  font-size: 0.8rem;
+  color: var(--g600);
+  margin: 0;
+  line-height: 1.2;
+}
+.project-toggle-btn {
+  background: var(--g100);
+  border: 1px solid var(--g200);
+  color: var(--g800);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease), transform 0.25s var(--ease);
+  padding: 0;
+  flex-shrink: 0;
+}
+.showcase-project:hover .project-toggle-btn {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--ink);
+}
+
+/* Details inside grid are hidden because we use the modal popup now */
+.project-details-expand {
+  display: none !important;
+}
+
+/* Compact 2-column mobile layout */
+@media(max-width: 767px) {
+  .showcase-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  .showcase-project {
+    cursor: pointer;
+  }
+  .showcase-project .ba-slider {
+    aspect-ratio: 4/3;
+  }
+  .project-header {
+    padding: 12px 10px !important;
+    gap: 4px !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  .project-number {
+    font-size: 0.7rem !important;
+  }
+  .project-title-meta h3 {
+    font-size: 0.82rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 2px !important;
+  }
+  .project-short-meta {
+    font-size: 0.65rem !important;
+    line-height: 1.15 !important;
+  }
+  .project-toggle-btn {
+    display: none !important;
+  }
+}
+
+/* ---------- Ergebnisse Showcase Modal ---------- */
+.project-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease), visibility 0s 0.3s;
+  padding: 20px;
+}
+.project-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s var(--ease);
+}
+body.project-modal-open {
+  overflow: hidden;
+}
+.project-modal-container {
+  background: var(--white);
+  border: 1px solid var(--g200);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 85vh;
+  box-shadow: var(--sh-lift);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  animation: projectModalScaleIn 0.3s var(--ease) forwards;
+}
+@keyframes projectModalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.project-modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 520;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--g100);
+  border: 1px solid var(--g200);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+  padding: 0;
+}
+.project-modal-close-btn:hover {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--ink);
+  transform: rotate(90deg);
+}
+.project-modal-content {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+@media(max-width: 767px) {
+  .project-modal-container {
+    max-height: 90vh;
+    border-radius: 16px;
+  }
+  .project-modal-content {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .project-modal-close-btn {
+    background: var(--white);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+}
+.project-modal-slider-col {
+  background: var(--g900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+.project-modal-slider-col .ba-slider {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 16/10;
+  border-radius: 0;
+}
+@media(max-width: 767px) {
+  .project-modal-slider-col {
+    height: auto;
+  }
+}
+.project-modal-details-col {
+  padding: 36px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+@media(max-width: 767px) {
+  .project-modal-details-col {
+    padding: 24px 20px 30px;
+    overflow-y: visible;
+  }
+}
+.project-modal-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.project-modal-num {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--g500);
+  letter-spacing: 0.05em;
+}
+.project-modal-category {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--g100);
+  padding: 3px 8px;
+  border-radius: 100px;
+  color: var(--g700);
+}
+.project-modal-title {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  margin: 0 0 16px 0;
+  color: var(--ink);
+}
+@media(max-width: 767px) {
+  .project-modal-title {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+}
+.project-modal-body .project-meta-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+  border-bottom: 1px solid var(--g200);
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.project-modal-body .project-meta-list li {
+  font-size: 0.9rem;
+  color: var(--g800);
+  line-height: 1.45;
+}
+.project-modal-body .project-meta-list li strong {
+  color: var(--ink);
+}
+.project-modal-body p {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--g700);
+  margin: 0 0 24px 0;
+}
+.project-modal-cta {
+  align-self: flex-start;
+  margin-top: auto;
+}
+@media(max-width: 767px) {
+  .project-modal-cta {
+    width: 100%;
+    text-align: center;
+    align-self: stretch;
+  }
+}
+
 .ba-slider{
   position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;
   background:var(--g200);user-select:none;touch-action:none;
@@ -1037,10 +1409,6 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--yellow);
 .js [data-reveal].in{
   opacity:1;
   transform:translateY(0) scale(1);
-}
-[data-parallax] {
-  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform;
 }
 
 /* ---------- Mobile Nav ---------- */

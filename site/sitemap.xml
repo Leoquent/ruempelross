@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.ruempelross.de/</loc>
+    <lastmod>2026-07-07</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.ruempelross.de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.ruempelross.de/en/"/>
+  </url>
+  <url>
+    <loc>https://www.ruempelross.de/en/</loc>
+    <lastmod>2026-07-07</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.ruempelross.de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.ruempelross.de/en/"/>
+  </url>
+  <url>
+    <loc>https://www.ruempelross.de/haushaltsaufloesung-stuttgart.html</loc>
+    <lastmod>2026-07-07</lastmod>
+  </url>
+  <url>
+    <loc>https://www.ruempelross.de/wohnungsaufloesung-stuttgart.html</loc>
+    <lastmod>2026-07-07</lastmod>
+  </url>
+  <url>
+    <loc>https://www.ruempelross.de/keller-entruempelung-stuttgart.html</loc>
+    <lastmod>2026-07-07</lastmod>
+  </url>
+  <url>
+    <loc>https://www.ruempelross.de/messie-entruempelung-stuttgart.html</loc>
+    <lastmod>2026-07-07</lastmod>
+  </url>
+  <url>
+    <loc>https://www.ruempelross.de/nachlasspflege.html</loc>
+    <lastmod>2026-07-07</lastmod>
+  </url>
+</urlset>
