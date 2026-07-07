@@ -224,13 +224,16 @@
         activeSlider = slider;
         setPos(slider, e.clientX);
       });
-      slider.addEventListener('touchstart', function (e) {
-        isTouchMode = true;
-        activeSlider = slider;
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        dragDirection = null;
-      }, { passive: true });
+      var handle = slider.querySelector('.ba-handle');
+      if (handle) {
+        handle.addEventListener('touchstart', function (e) {
+          isTouchMode = true;
+          activeSlider = slider;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+          dragDirection = null;
+        }, { passive: true });
+      }
     });
 
     window.addEventListener('mousemove', function (e) {

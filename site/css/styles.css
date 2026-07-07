@@ -990,7 +990,7 @@ body.project-modal-open {
 
 .ba-slider{
   position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;
-  background:var(--g200);user-select:none;touch-action:none;
+  background:var(--g200);user-select:none;touch-action:pan-y;
 }
 .ba-img{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:var(--f-display);font-weight:700;font-size:1.3rem;color:var(--g500)}
@@ -999,17 +999,16 @@ body.project-modal-open {
 .ba-after{background:var(--g200);clip-path:inset(0 0 0 50%)}
 .ba-handle{
   position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--yellow);cursor:ew-resize;
+  touch-action:none;
+  /* Bigger touch target on mobile */
+  padding:0 18px;margin-left:-18px;background-clip:content-box;
 }
 .ba-handle::after{
   content:"◂ ▸";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   background:var(--yellow);color:var(--ink);font-size:.7rem;font-weight:700;
   padding:9px 10px;border-radius:999px;white-space:nowrap;
 }
-.ba-label{
-  position:absolute;top:14px;font-size:.75rem;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;background:rgba(20,20,20,.75);color:#fff;padding:5px 12px;border-radius:6px;
-}
-.ba-label.before{left:14px}.ba-label.after{right:14px}
+.ba-label{display:none}
 
 blockquote{
   margin:0;padding-left:22px;border-left:3px solid var(--yellow);
