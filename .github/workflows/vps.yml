@@ -15,7 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check website integrity
-        run: python3 tests/site_integrity.py
+        run: |
+          python3 tests/site_integrity.py
+          node --test tests/quiz-regression.cjs
+          python3 tests/mail-layout.py
       - name: Deploy main to VPS
         env:
           DEPLOY_TOKEN: ${{ secrets.VPS_DEPLOY_TOKEN }}
