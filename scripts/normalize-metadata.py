@@ -35,9 +35,9 @@ for file in ROOT.rglob('*.html'):
     for key, value in [('twitter:card','summary_large_image'),('twitter:title',title),
                        ('twitter:description',description),('twitter:image',IMAGE),('twitter:image:alt',alt)]:
         tags.append(f'<meta name="{key}" content="{escape(value, quote=True)}">')
-    tags += [f'<link rel="icon" href="{prefix}favicon.ico" sizes="16x16 32x32 48x48">',
-             *[f'<link rel="icon" type="image/png" sizes="{n}x{n}" href="{prefix}assets/favicon-{n}.png">' for n in (16,32,48)],
-             f'<link rel="apple-touch-icon" sizes="180x180" href="{prefix}assets/apple-touch-icon.png">',
+    tags += [f'<link rel="icon" href="{prefix}favicon.ico?v=2" sizes="16x16 32x32 48x48">',
+             *[f'<link rel="icon" type="image/png" sizes="{n}x{n}" href="{prefix}assets/favicon-{n}.png?v=2">' for n in (16,32,48)],
+             f'<link rel="apple-touch-icon" sizes="180x180" href="{prefix}assets/apple-touch-icon.png?v=2">',
              '<meta name="theme-color" content="#FFC400">']
     file.write_text(head.rstrip()+'\n'+ '\n'.join(tags)+'\n</head>'+rest, encoding='utf-8')
 print('Normalized social metadata, canonical URLs and icons on all HTML pages.')
