@@ -24,21 +24,56 @@
     var group=strip.querySelector('.work-group'),button=strip.querySelector('.work-pause');
     var track=group.parentElement,viewport=strip.querySelector('.work-window');
     var desktop=window.matchMedia('(min-width:768px)'),ready=false;
+    var mobile=false,distance=0,position=0,lastFrame=0,resumeAt=0,touching=false,frame=0;
+    viewport.tabIndex=0;
+    viewport.setAttribute('aria-label',en?'Team photos. Swipe to browse.':'Teamfotos. Zum Durchsehen wischen.');
+    function animate(now){
+      frame=0;
+      if(!mobile)return;
+      var elapsed=lastFrame?Math.min(now-lastFrame,50):0;lastFrame=now;
+      if(touching||now<resumeAt||strip.classList.contains('is-paused')||document.hidden){
+        position=viewport.scrollLeft;
+      }else{
+        position+=elapsed*0.022;
+      }
+      // Stay in the middle copy: both swipe directions have an identical neighbour.
+      if(!touching){
+        if(position>=distance*2||position<distance)position=distance+((position-distance)%distance+distance)%distance;
+        if((now>=resumeAt&&!strip.classList.contains('is-paused')&&!document.hidden)||Math.abs(viewport.scrollLeft-position)>distance/2){viewport.scrollLeft=position;}
+      }
+      frame=requestAnimationFrame(animate);
+    }
+    function hold(){resumeAt=performance.now()+2500;position=viewport.scrollLeft;}
+    viewport.addEventListener('pointerdown',function(){touching=true;hold();},{passive:true});
+    window.addEventListener('pointerup',function(){if(touching){touching=false;hold();}},{passive:true});
+    window.addEventListener('pointercancel',function(){touching=false;hold();},{passive:true});
+    viewport.addEventListener('wheel',hold,{passive:true});
+    viewport.addEventListener('keydown',hold);
     function layout(){
       var moving=ready&&!motion.matches&&desktop.matches;
-      if(moving){
-        var distance=group.getBoundingClientRect().width+parseFloat(getComputedStyle(track).columnGap);
+      var nextMobile=ready&&!motion.matches&&!desktop.matches;
+      var wasMobile=mobile;mobile=nextMobile;
+      strip.classList.toggle('is-auto-mobile',mobile);
+      if(moving||mobile){
+        distance=group.getBoundingClientRect().width+parseFloat(getComputedStyle(track).columnGap);
         track.style.setProperty('--work-distance',distance+'px');
         track.style.setProperty('--work-duration',(distance/26.3333)+'s');
         // Enough copies to cover the viewport even at the end of a full cycle.
-        var count=Math.ceil(viewport.clientWidth/distance)+1;
+        var count=Math.ceil(viewport.clientWidth/distance)+(mobile?3:1);
         while(track.children.length<count){
           var clone=group.cloneNode(true);clone.setAttribute('aria-hidden','true');
           clone.querySelectorAll('img').forEach(function(img){img.alt='';img.loading='eager';});
           track.appendChild(clone);
         }
       }
-      strip.classList.toggle('is-moving',moving);button.hidden=!moving;
+      strip.classList.toggle('is-moving',moving);button.hidden=!(moving||mobile);
+      if(mobile){
+        if(!wasMobile){position=distance;viewport.scrollLeft=position;lastFrame=0;}
+        if(!frame)frame=requestAnimationFrame(animate);
+      }else{
+        if(frame)cancelAnimationFrame(frame);frame=0;lastFrame=0;
+        if(wasMobile)viewport.scrollLeft=0;
+      }
     }
     readyImages(group).then(function(){ready=true;layout();});
     new ResizeObserver(layout).observe(viewport);

@@ -13,7 +13,7 @@
 @media(prefers-reduced-motion:reduce){.work-strip.is-moving .work-track{animation:none}.work-strip.is-moving .work-window{overflow:auto}.work-group[aria-hidden]{display:none}}
 
 .results-heading h2 span{display:block}.results-heading h2 br{display:none}.local-section{padding-top:160px}
-@media(max-width:767px){.work-strip.is-moving .work-track{animation:none}.work-strip.is-moving .work-window{overflow:auto}.work-pause{display:none}}
+@media(max-width:767px){.work-strip.is-moving .work-track{animation:none}.work-strip.is-moving .work-window{overflow:auto}.work-strip.is-auto-mobile .work-group[aria-hidden]{display:flex}.work-strip.is-auto-mobile .work-window{padding:0;overflow-x:auto;scrollbar-width:none;overflow-anchor:none}.work-strip.is-auto-mobile .work-window::-webkit-scrollbar{display:none}.work-strip-heading{align-items:flex-start}.work-pause{flex-shrink:0}}
 
 /* Shared content pages and crawlable service cards. */
 .service-card{position:relative;display:flex;flex-direction:column;align-items:flex-start}
