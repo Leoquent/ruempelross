@@ -12,7 +12,8 @@
   var ENDPOINT = 'https://formsubmit.co/ajax/' + MAIL_TO;
 
   var overlay = document.getElementById('quizOverlay');
-  if (!overlay) return;
+  if (!overlay || !overlay.querySelector('.quiz-step')) return;
+  var storage = {getItem:function(k){try{return sessionStorage.getItem(k);}catch(e){return null;}},setItem:function(k,v){try{sessionStorage.setItem(k,v);}catch(e){}},removeItem:function(k){try{sessionStorage.removeItem(k);}catch(e){}}};
 
   // Language detection
   var lang = document.documentElement.lang === 'en' ? 'en' : 'de';
@@ -160,7 +161,7 @@
   function updateAllWhatsAppLinks() {
     var completedState = null;
     try {
-      completedState = JSON.parse(sessionStorage.getItem('rr_quiz_completed'));
+      completedState = JSON.parse(storage.getItem('rr_quiz_completed'));
     } catch (e) {}
     
     var waLinks = document.querySelectorAll('a[href*="wa.me/"], a[href*="whatsapp.com"], a#dankeWaBtn');
@@ -200,17 +201,21 @@
   var lastFocus = null;
   function openQuiz() {
     // Clear completed state if starting a new quiz
-    sessionStorage.removeItem('rr_quiz_completed');
+    storage.removeItem('rr_quiz_completed');
     updateAllWhatsAppLinks();
 
     lastFocus = document.activeElement;
     overlay.classList.add('open');
+    document.querySelectorAll('body > header, body > main, body > footer, body > .sticky-bar').forEach(function(el){el.inert=true;});
     document.body.classList.add('quiz-open');
     overlay.scrollTop = 0;
+    if(steps){if(current===order.length-1){state={extras:[]};document.getElementById('quiz').reset();overlay.querySelectorAll('.selected').forEach(function(b){b.classList.remove('selected');});show(0);}else show(current);}
     if (history.replaceState) history.replaceState(null, '', '#anfrage');
   }
   function closeQuiz() {
+    clearTimeout(advanceTimer);
     overlay.classList.remove('open');
+    document.querySelectorAll('body > header, body > main, body > footer, body > .sticky-bar').forEach(function(el){el.inert=false;});
     document.body.classList.remove('quiz-open');
     if (history.replaceState) history.replaceState(null, '', window.location.pathname);
     if (lastFocus && lastFocus.focus) lastFocus.focus();
@@ -298,23 +303,29 @@
   var FUELL_LABELS = ['bis zu 1/4 voll', 'ca. halb voll', 'ca. 3/4 voll', 'komplett voll', 'Messie / Härtefall'];
 
   /* ---------- State & Navigation ---------- */
-  var state = JSON.parse(sessionStorage.getItem('rr_quiz') || '{}');
-  state.extras = state.extras || [];
+  var state = {};
+  try { state = JSON.parse(storage.getItem('rr_quiz') || '{}') || {}; } catch(e) {}
+  state.extras = Array.isArray(state.extras) ? state.extras : [];
   var steps = Array.prototype.slice.call(overlay.querySelectorAll('.quiz-step'));
   var order = ['objekt', 'groesse', 'fuellgrad', 'zugang', 'termin', 'extras', 'kontakt', 'danke'];
   var bar = document.getElementById('bar');
   var current = 0;
+  var advanceTimer;
+  function advance(){clearTimeout(advanceTimer);var next=current+1;advanceTimer=setTimeout(function(){show(next);},220);}
 
-  function save() { sessionStorage.setItem('rr_quiz', JSON.stringify(state)); }
+  function save() { storage.setItem('rr_quiz', JSON.stringify(state)); }
 
   function show(i) {
+    clearTimeout(advanceTimer);
     current = Math.max(0, Math.min(i, order.length - 1));
     steps.forEach(function (s) {
       s.classList.toggle('active', s.getAttribute('data-step') === order[current]);
     });
     bar.style.width = ((current) / (order.length - 2) * 100) + '%';
     if (order[current] === 'groesse') buildSizeOptions();
-    overlay.scrollTo({ top: 0, behavior: 'smooth' });
+    overlay.scrollTo({ top: 0, behavior: 'instant' });
+    var active=steps.find(function(s){return s.classList.contains('active');});
+    if(active && overlay.classList.contains('open')){var heading=active.querySelector('h2,h3');if(heading){heading.tabIndex=-1;heading.focus();}}
   }
 
   overlay.querySelectorAll('[data-back]').forEach(function (b) {
@@ -327,9 +338,10 @@
       btn.addEventListener('click', function () {
         stepEl.querySelectorAll('.quiz-opt').forEach(function (b) { b.classList.remove('selected'); });
         btn.classList.add('selected');
+        if(key==='objekt' && state.objekt!==btn.getAttribute('data-value')) delete state.groesse;
         state[key] = btn.getAttribute('data-value');
         save();
-        setTimeout(function () { show(current + 1); }, 220);
+        advance();
       });
     });
   }
@@ -395,7 +407,7 @@
         wrap.querySelectorAll('.quiz-opt').forEach(function (x) { x.classList.remove('selected'); });
         b.classList.add('selected');
         state.groesse = s.label; save();
-        setTimeout(function () { show(current + 1); }, 220);
+        advance();
       });
       wrap.appendChild(b);
     });
@@ -427,6 +439,10 @@
 
   function renderResult() {
     var p = calcPrice();
+    var label=document.querySelector('.quiz-danke-price .p-label');
+    var note=document.querySelector('.quiz-danke-price .p-note');
+    if(label){if(!label.dataset.original)label.dataset.original=label.textContent;label.textContent=label.dataset.original;}
+    if(note){if(!note.dataset.original)note.dataset.original=note.textContent;note.textContent=note.dataset.original;}
     var range = document.getElementById('dankePriceRange');
     if (!range) return;
     if (p) {
@@ -469,6 +485,7 @@
   /* ---------- Absenden ---------- */
   document.getElementById('quiz').addEventListener('submit', function (e) {
     e.preventDefault();
+    if(document.getElementById('submitBtn').disabled)return;
     var name = document.getElementById('name').value.trim();
     var tel = document.getElementById('tel').value.trim();
     var email = document.getElementById('email').value.trim();
@@ -477,9 +494,11 @@
     if (document.getElementById('firma').value) return; // Honeypot
     if (name.length < 2) { err.textContent = TRANSLATIONS[lang].alertName; err.style.display = 'block'; return; }
     if (tel.replace(/\D/g, '').length < 6) { err.textContent = TRANSLATIONS[lang].alertTel; err.style.display = 'block'; return; }
+    if (email && !document.getElementById('email').checkValidity()) {err.textContent=lang==='en'?'Please enter a valid email address.':'Bitte geben Sie eine gültige E-Mail-Adresse ein.';err.style.display='block';err.focus();return;}
     if (!document.getElementById('dsgvo').checked) { err.textContent = TRANSLATIONS[lang].alertDsgvo; err.style.display = 'block'; return; }
 
     state.name = name; state.tel = tel; state.email = email;
+    renderResult();
     save();
 
     var subject = 'Anfrage: ' + state.objekt + ', ' + state.groesse + ', ' + state.fuellgrad +
@@ -508,12 +527,18 @@
     var btnLabel = btn.textContent;
     btn.disabled = true; btn.textContent = TRANSLATIONS[lang].sending;
 
+    var controller=new AbortController();
+    var timeout=setTimeout(function(){controller.abort();},20000);
     fetch(ENDPOINT, {
+      signal:controller.signal,
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ _subject: subject, Zusammenfassung: body, _template: 'box' })
+      body: JSON.stringify({ _subject: subject, Zusammenfassung: body, _template: 'box', email: email || undefined, _replyto: email || undefined })
     }).then(function (r) {
       if (!r.ok) throw new Error('send failed');
+      return r.json();
+    }).then(function(result){
+      if(result.success!==true && result.success!=='true') throw new Error('send rejected');
       finish();
     }).catch(function () {
       // Ehrlich bleiben: kein Danke-Screen, wenn nichts übertragen wurde.
@@ -523,13 +548,14 @@
         encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
       err.innerHTML = TRANSLATIONS[lang].sendFailed.replace('{mailto}', mailHref);
       err.style.display = 'block';
-    });
+      err.focus();
+    }).finally(function(){clearTimeout(timeout);btn.disabled=false;btn.textContent=btnLabel;});
 
     function finish() {
       renderResult(); // Berechne Preis und erstelle WhatsApp-Link
 
       // Save completed state to sessionStorage
-      sessionStorage.setItem('rr_quiz_completed', JSON.stringify(state));
+      storage.setItem('rr_quiz_completed', JSON.stringify(state));
       // Update all WhatsApp links on the page with completed answers
       updateAllWhatsAppLinks();
 
@@ -552,14 +578,17 @@
 
       rows.forEach(function (row) {
         var li = document.createElement('li');
-        li.innerHTML = row[0] + ' <b>' + row[1] + '</b>';
+        li.textContent = row[0] + ' ';
+        var value=document.createElement('b');value.textContent=row[1];li.appendChild(value);
         sum.appendChild(li);
       });
-      sessionStorage.removeItem('rr_quiz');
+      storage.removeItem('rr_quiz');
       show(order.indexOf('danke'));
       bar.style.width = '100%';
     }
   });
 
+  overlay.querySelectorAll('[data-value]').forEach(function(b){var step=b.closest('[data-step]');if(step && (state[step.dataset.step]===b.dataset.value || (b.hasAttribute('data-multi') && state.extras.indexOf(b.dataset.value)>=0))) b.classList.add('selected');});
+  ['plz','name','tel','email'].forEach(function(id){if(state[id])document.getElementById(id).value=state[id];});
   show(0);
 })();
