@@ -1,0 +1,22 @@
+services:
+  ruempelross-deploy:
+    build:
+      context: /docker/ruempelross/webhook
+      dockerfile: Dockerfile.webhook
+    restart: unless-stopped
+    env_file: /docker/ruempelross/deploy.env
+    volumes:
+      - /docker/hermes-agent-yasb/data/clients/ruempelross/RRwebsite:/docker/hermes-agent-yasb/data/clients/ruempelross/RRwebsite
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ruempelross-deploy.rule=Host(`www.ruempelross.de`) && Path(`/__deploy/ruempelross`)"
+      - "traefik.http.routers.ruempelross-deploy.priority=100"
+      - "traefik.http.routers.ruempelross-deploy.entrypoints=websecure"
+      - "traefik.http.routers.ruempelross-deploy.tls=true"
+      - "traefik.http.services.ruempelross-deploy.loadbalancer.server.port=8080"
