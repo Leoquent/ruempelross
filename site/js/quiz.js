@@ -532,7 +532,7 @@
       signal:controller.signal,
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ name: name, telefon: tel, email: email || undefined, Zusammenfassung: body, firma: '' })
+      body: JSON.stringify({ name: name, telefon: tel, email: email || undefined, Zusammenfassung: body, firma: '', objekt: state.objekt, groesse: state.groesse, fuellgrad: state.fuellgrad, zugang: state.zugang, plz: state.plz, termin: state.termin, extras: state.extras, einschaetzung: state.einschaetzung })
     }).then(function (r) {
       if (!r.ok) throw new Error('send failed');
       return r.json();
