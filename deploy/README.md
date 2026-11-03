@@ -40,3 +40,27 @@ copy on the API server. Success requires `{ "ok": true, "mail": "gesendet" }`.
 HTML mail has a plain-text alternative. Do not add customer submissions to this
 repository or application logs. Use fictitious data for tests; real test emails
 require an explicit request identifying the recipients.
+
+### Shared API retention standard (2026-11-03)
+
+Applies to every current and future tenant of `api.lqnt.de`: process form bodies
+in memory only; do not write payloads, names, email addresses, subjects or SMTP
+error strings to files, logs or retry queues. Delivery records contain only a
+random identifier, tenant, status and UTC timestamp. `delivery_retention.py`
+deletes records after 30 days at startup and every minute through
+`/etc/cron.d/lqnt-form-metadata`. Moll questionnaire idempotency records retain
+their request ID, digest, status and timestamp under the same 30-day rule.
+No per-delivery stdout logs: Docker size rotation is not a time retention rule.
+
+The old nightly form-content backup and 12-month retention jobs are disabled.
+The owner authorized removal of the three legacy JSONL files and 32 dedicated
+archives on 2026-11-03. No mailbox messages were deleted. The deletion report is
+private on the VPS: `/docker/lqnt-api/backups/retention-20261103/deployment.json`.
+Do not create new backups of form contents or delivery databases.
+
+Hostinger full-VPS backups are independent, weekly with two restore points;
+they may retain previous files and metadata until replaced. They are not
+selectively editable. After a full restore, before exposing the API, reinstall
+this policy, remove legacy JSONL/archive copies, disable the old backup jobs
+and run the metadata purge. Never restore an old content-writing API as live.
+Mailbox and mail-relay retention are separate from this API policy.

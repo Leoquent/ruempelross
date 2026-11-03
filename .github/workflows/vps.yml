@@ -19,6 +19,7 @@ jobs:
           python3 tests/site_integrity.py
           node --test tests/quiz-regression.cjs
           python3 tests/mail-layout.py
+          python3 tests/delivery-retention.py
       - name: Deploy main to VPS
         env:
           DEPLOY_TOKEN: ${{ secrets.VPS_DEPLOY_TOKEN }}
