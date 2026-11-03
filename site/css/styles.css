@@ -203,6 +203,7 @@ section{padding:var(--sec-y) 0}
 
 /* Logo */
 .logo{text-decoration:none;line-height:1;display:flex;align-items:center;flex:0 0 auto}
+.logo > img{width:auto;object-fit:contain;flex-shrink:0;display:block}
 .logo-img{height:44px;width:auto;flex:0 0 auto;object-fit:contain;display:block;transition:filter .25s var(--ease)}
 /* Über dem Video: Logo mit weißem Schriftzug – Maskottchen bleibt farbig & detailliert.
    Gescrollt (gelbe Leiste): farbiges Original. (Kein Weißfilter mehr, der die Details plättet.) */
