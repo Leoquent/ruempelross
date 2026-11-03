@@ -548,37 +548,15 @@ section{padding:var(--sec-y) 0}
   width: auto;
   object-fit: contain;
   display: block;
-  filter: grayscale(1) brightness(0.2) opacity(0.4);
-  transition: filter 0.25s var(--ease), opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  filter: none;
+  transition: transform 0.25s var(--ease);
 }
 .ticker-logo:hover {
-  filter: grayscale(0) brightness(1) opacity(0.95);
   transform: scale(1.05);
 }
 @keyframes ticker {
   0% { transform: translate3d(0, 0, 0); }
   100% { transform: translate3d(-33.3333%, 0, 0); }
-}
-
-/* Mobile: kein Hover → Logos in Farbe; langer Graustufen-Verlauf an den Rändern.
-   Die Logos "färben" sich, sobald sie Richtung Mitte scrollen. (Gilt DE + EN) */
-@media(max-width:1023px){
-  .ticker-logo{ filter:none; opacity:.95; }
-  .ticker-wrap::before,
-  .ticker-wrap::after{
-    content:""; position:absolute; top:0; bottom:0; width:38%;
-    z-index:3; pointer-events:none; background:transparent;
-    -webkit-backdrop-filter:grayscale(1);
-    backdrop-filter:grayscale(1);
-  }
-  .ticker-wrap::before{ left:0;
-    -webkit-mask-image:linear-gradient(to right,#000 0%,#000 8%,transparent 100%);
-            mask-image:linear-gradient(to right,#000 0%,#000 8%,transparent 100%);
-  }
-  .ticker-wrap::after{ right:0;
-    -webkit-mask-image:linear-gradient(to left,#000 0%,#000 8%,transparent 100%);
-            mask-image:linear-gradient(to left,#000 0%,#000 8%,transparent 100%);
-  }
 }
 
 /* ---------- Cards ---------- */
