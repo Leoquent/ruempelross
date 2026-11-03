@@ -1,0 +1,10 @@
+[Unit]
+Description=Wait for RuempelRoss domain DNS and activate HTTPS once
+
+[Timer]
+OnBootSec=30
+OnUnitInactiveSec=60
+Unit=ruempelross-domain-activation.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,24 @@
+services:
+  ruempelross-web:
+    image: nginx:1.27-alpine
+    container_name: ruempelross-web
+    restart: unless-stopped
+    volumes:
+      - /docker/hermes-agent-yasb/data/clients/ruempelross/RRwebsite/site:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ruempelross.rule=Host(`187.124.181.132.sslip.io`)"
+      - "traefik.http.routers.ruempelross.entrypoints=websecure"
+      - "traefik.http.routers.ruempelross.tls=true"
+      - "traefik.http.routers.ruempelross.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.ruempelross.service=ruempelross"
+      - "traefik.http.services.ruempelross.loadbalancer.server.port=80"
+      - "traefik.http.routers.ruempelross-domain.rule=Host(`ruempelross.de`) || Host(`www.ruempelross.de`)"
+      - "traefik.http.routers.ruempelross-domain.entrypoints=websecure"
+      - "traefik.http.routers.ruempelross-domain.service=ruempelross"
+      - "traefik.http.routers.ruempelross-domain.tls=true"
+      # activate-domain.py adds the resolver only after public DNS is ready.
+      - "traefik.http.routers.ruempelross-domain.middlewares=ruempelross-www"
+      - "traefik.http.middlewares.ruempelross-www.redirectregex.regex=^https?://ruempelross[.]de/(.*)"
+      - "traefik.http.middlewares.ruempelross-www.redirectregex.replacement=https://www.ruempelross.de/$${1}"
+      - "traefik.http.middlewares.ruempelross-www.redirectregex.permanent=true"

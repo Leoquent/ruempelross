@@ -203,3 +203,7 @@ for slug in new_slugs:
     if '/'+slug+'.html' not in text:text=text.replace('</urlset>','  <url><loc>https://www.ruempelross.de/'+slug+'.html</loc><lastmod>2026-11-03</lastmod></url>\n</urlset>')
 file.write_text(text,encoding='utf-8')
 print('Built',len(new_slugs),'pages; linked services and regions; updated sitemap.')
+
+# Keep regenerated pages consistent with shared social metadata and favicons.
+import runpy
+runpy.run_path(str(Path(__file__).with_name("normalize-metadata.py")))
