@@ -7,9 +7,8 @@
 (function () {
   'use strict';
   var MAIL_TO = 'info@ruempelross.de';
-  // FormSubmit (kostenlos): erste eingehende Anfrage löst eine Aktivierungs-Mail
-  // an MAIL_TO aus – einmal bestätigen, danach läuft der Versand automatisch.
-  var ENDPOINT = 'https://formsubmit.co/ajax/' + MAIL_TO;
+  // Recipient and allowed origins are configured on the LQNT server.
+  var ENDPOINT = 'https://api.lqnt.de/lead';
 
   var overlay = document.getElementById('quizOverlay');
   if (!overlay || !overlay.querySelector('.quiz-step')) return;
@@ -32,7 +31,7 @@
       alertPlz: 'Bitte geben Sie eine gültige Postleitzahl ein.',
       alertName: 'Bitte geben Sie Ihren Namen an.',
       alertTel: 'Bitte geben Sie eine gültige Telefonnummer an.',
-      alertDsgvo: 'Bitte stimmen Sie der Datenverarbeitung zu.',
+      alertDsgvo: 'Bitte bestätigen Sie, dass Sie die Datenschutzhinweise gelesen haben.',
       objekt: 'Objekt',
       fuellgrad: 'Füllgrad',
       ort: 'Ort',
@@ -100,7 +99,7 @@
       alertPlz: 'Please enter a valid ZIP code.',
       alertName: 'Please enter your name.',
       alertTel: 'Please enter a valid phone number.',
-      alertDsgvo: 'Please agree to the data processing.',
+      alertDsgvo: 'Please confirm that you have read the privacy information.',
       objekt: 'Property',
       fuellgrad: 'Volume',
       ort: 'Location',
@@ -533,12 +532,12 @@
       signal:controller.signal,
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ _subject: subject, Zusammenfassung: body, _template: 'box', email: email || undefined, _replyto: email || undefined })
+      body: JSON.stringify({ name: name, telefon: tel, email: email || undefined, Zusammenfassung: body, firma: '' })
     }).then(function (r) {
       if (!r.ok) throw new Error('send failed');
       return r.json();
     }).then(function(result){
-      if(result.success!==true && result.success!=='true') throw new Error('send rejected');
+      if(result.ok!==true || result.mail!=='gesendet') throw new Error('send rejected');
       finish();
     }).catch(function () {
       // Ehrlich bleiben: kein Danke-Screen, wenn nichts übertragen wurde.
