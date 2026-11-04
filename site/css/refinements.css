@@ -15,7 +15,7 @@
 .results-heading h2 span{display:block}.results-heading h2 br{display:none}.local-section{padding-top:160px}
 @media(max-width:767px){.work-strip-heading{align-items:flex-start}.work-pause{flex-shrink:0}}
 .work-strip.is-auto .work-group[aria-hidden]{display:flex}.work-strip.is-auto .work-window{padding:0;scrollbar-width:none;overflow-anchor:none}.work-strip.is-auto .work-window::-webkit-scrollbar{display:none}
-.work-window{cursor:grab;user-select:none;scroll-behavior:auto}.work-strip.is-dragging .work-window{cursor:grabbing}.work-photo img{-webkit-user-drag:none}
+.work-window{cursor:grab;user-select:none;scroll-behavior:auto;touch-action:pan-y pinch-zoom;overscroll-behavior-x:contain}.work-strip.is-dragging .work-window{cursor:grabbing}.work-photo img{-webkit-user-drag:none}
 
 
 /* Shared content pages and crawlable service cards. */

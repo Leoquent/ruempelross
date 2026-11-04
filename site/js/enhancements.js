@@ -24,7 +24,7 @@
     var group=strip.querySelector('.work-group'),button=strip.querySelector('.work-pause');
     var track=group.parentElement,viewport=strip.querySelector('.work-window');
     var ready=false,automatic=false,distance=0,position=0,lastFrame=0,resumeAt=0,touching=false,frame=0;
-    var mouseId=null,lastX=0;
+    var dragId=null,lastX=0,lastMove=0,velocity=0;
     viewport.tabIndex=0;
     viewport.setAttribute('aria-label',en?'Team photos. Swipe or drag to browse.':'Teamfotos. Zum Durchsehen wischen oder mit der Maus ziehen.');
     function normalize(value){return distance+((value-distance)%distance+distance)%distance;}
@@ -34,7 +34,12 @@
       var elapsed=lastFrame?Math.min(now-lastFrame,50):0;lastFrame=now;
       var held=touching||now<resumeAt||strip.classList.contains('is-paused')||document.hidden;
       if(held)position=viewport.scrollLeft;
-      else position+=elapsed*(window.innerWidth<768?0.022:0.0263333);
+      else if(Math.abs(velocity)>0.02){
+        position+=velocity*elapsed;
+        velocity*=Math.exp(-elapsed/180);
+      }else{
+        velocity=0;position+=elapsed*(window.innerWidth<768?0.022:0.0263333);
+      }
       if(!touching){
         var wrapped=position<distance||position>=distance*2;
         if(wrapped)position=normalize(position);
@@ -42,31 +47,32 @@
       }
       frame=requestAnimationFrame(animate);
     }
-    function hold(){resumeAt=performance.now()+2500;position=viewport.scrollLeft;}
+    function hold(){velocity=0;resumeAt=performance.now()+2500;position=viewport.scrollLeft;}
     viewport.addEventListener('dragstart',function(e){e.preventDefault();});
+    // Own horizontal gestures: native touch momentum must not fight loop wrapping.
+    // touch-action: pan-y still lets the browser handle vertical page scrolling.
     viewport.addEventListener('pointerdown',function(e){
-      if(e.pointerType==='mouse'&&e.button!==0)return;
-      touching=true;hold();
-      if(e.pointerType==='mouse'){
-        mouseId=e.pointerId;lastX=e.clientX;
-        viewport.setPointerCapture(e.pointerId);
-        strip.classList.add('is-dragging');
-        e.preventDefault();
-      }
+      if(dragId!==null||!e.isPrimary||(e.pointerType==='mouse'&&e.button!==0))return;
+      touching=true;hold();dragId=e.pointerId;lastX=e.clientX;lastMove=performance.now();
+      viewport.setPointerCapture(e.pointerId);
+      strip.classList.add('is-dragging');
+      if(e.pointerType==='mouse')e.preventDefault();
     });
     viewport.addEventListener('pointermove',function(e){
-      if(e.pointerId!==mouseId)return;
-      position=viewport.scrollLeft+lastX-e.clientX;lastX=e.clientX;
+      if(e.pointerId!==dragId)return;
+      var now=performance.now(),delta=lastX-e.clientX,elapsed=Math.max(now-lastMove,1);
+      // Cap inertia, not finger movement; a quick flick cannot race through the copies.
+      velocity=Math.max(-2,Math.min(2,delta/elapsed));
+      lastMove=now;lastX=e.clientX;
+      position=viewport.scrollLeft+delta;
       if(automatic)position=normalize(position);
       viewport.scrollLeft=position;
     });
     function release(e){
-      if(!touching)return;
-      if(mouseId!==null&&e.pointerId!==mouseId)return;
-      var wasMouse=mouseId!==null;
-      touching=false;mouseId=null;strip.classList.remove('is-dragging');
-      hold();
-      if(wasMouse){resumeAt=0;lastFrame=0;}
+      if(e.pointerId!==dragId)return;
+      touching=false;dragId=null;strip.classList.remove('is-dragging');
+      if(e.type!=='pointerup'||e.pointerType==='mouse'||performance.now()-lastMove>80)velocity=0;
+      position=viewport.scrollLeft;resumeAt=0;lastFrame=0;
     }
     window.addEventListener('pointerup',release,{passive:true});
     window.addEventListener('pointercancel',release,{passive:true});
@@ -98,7 +104,7 @@
     readyImages(group).then(function(){ready=true;layout();});
     new ResizeObserver(layout).observe(viewport);
     motion.addEventListener('change',layout);
-    button.addEventListener('click',function(){var paused=strip.classList.toggle('is-paused');button.setAttribute('aria-pressed',String(paused));button.textContent=paused?(en?'Play photos':'Bilder fortsetzen'):(en?'Pause photos':'Bilder pausieren');});
+    button.addEventListener('click',function(){velocity=0;var paused=strip.classList.toggle('is-paused');button.setAttribute('aria-pressed',String(paused));button.textContent=paused?(en?'Play photos':'Bilder fortsetzen'):(en?'Pause photos':'Bilder pausieren');});
   });
   var video=document.querySelector('.hero-video');
   if(video){var control=document.createElement('button');control.type='button';control.className='hero-motion';video.parentElement.appendChild(control);

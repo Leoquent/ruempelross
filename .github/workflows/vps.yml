@@ -18,6 +18,7 @@ jobs:
         run: |
           python3 tests/site_integrity.py
           node --test tests/quiz-regression.cjs
+          node tests/gallery_gestures.cjs
           python3 tests/mail-layout.py
           python3 tests/delivery-retention.py
       - name: Deploy main to VPS
