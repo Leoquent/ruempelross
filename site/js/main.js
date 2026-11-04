@@ -122,9 +122,9 @@
     // Pfad relativ zur Seite auflösen (EN-Seite liegt in /en/)
     var PREFIX = document.documentElement.lang === 'en' ? '../' : '';
     var BASE = PREFIX + 'assets/video_seq/ezgif-frame-';
-    // Mobile, Datensparmodus und reduzierte Bewegung: ein Standbild. Desktop: jedes dritte Frame.
+    // Scroll animation on all viewport sizes; respect reduced motion and data saving.
     var FRAME_FILES = [];
-    if (reduced || window.innerWidth < 768 || (navigator.connection && navigator.connection.saveData)) FRAME_FILES.push(49);
+    if (reduced || (navigator.connection && navigator.connection.saveData)) FRAME_FILES.push(49);
     else for (var fn = 1; fn <= 97; fn += 3) FRAME_FILES.push(fn);
     var FRAMES = FRAME_FILES.length;
     var imgs = new Array(FRAMES), ready = false, lastIdx = -1, raf = false;
