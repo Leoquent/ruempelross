@@ -23,61 +23,81 @@
   document.querySelectorAll('.work-strip').forEach(function(strip){
     var group=strip.querySelector('.work-group'),button=strip.querySelector('.work-pause');
     var track=group.parentElement,viewport=strip.querySelector('.work-window');
-    var desktop=window.matchMedia('(min-width:768px)'),ready=false;
-    var mobile=false,distance=0,position=0,lastFrame=0,resumeAt=0,touching=false,frame=0;
+    var ready=false,automatic=false,distance=0,position=0,lastFrame=0,resumeAt=0,touching=false,frame=0;
+    var mouseId=null,lastX=0;
     viewport.tabIndex=0;
-    viewport.setAttribute('aria-label',en?'Team photos. Swipe to browse.':'Teamfotos. Zum Durchsehen wischen.');
+    viewport.setAttribute('aria-label',en?'Team photos. Swipe or drag to browse.':'Teamfotos. Zum Durchsehen wischen oder mit der Maus ziehen.');
+    function normalize(value){return distance+((value-distance)%distance+distance)%distance;}
     function animate(now){
       frame=0;
-      if(!mobile)return;
+      if(!automatic)return;
       var elapsed=lastFrame?Math.min(now-lastFrame,50):0;lastFrame=now;
-      if(touching||now<resumeAt||strip.classList.contains('is-paused')||document.hidden){
-        position=viewport.scrollLeft;
-      }else{
-        position+=elapsed*0.022;
-      }
-      // Stay in the middle copy: both swipe directions have an identical neighbour.
+      var held=touching||now<resumeAt||strip.classList.contains('is-paused')||document.hidden;
+      if(held)position=viewport.scrollLeft;
+      else position+=elapsed*(window.innerWidth<768?0.022:0.0263333);
       if(!touching){
-        if(position>=distance*2||position<distance)position=distance+((position-distance)%distance+distance)%distance;
-        if((now>=resumeAt&&!strip.classList.contains('is-paused')&&!document.hidden)||Math.abs(viewport.scrollLeft-position)>distance/2){viewport.scrollLeft=position;}
+        var wrapped=position<distance||position>=distance*2;
+        if(wrapped)position=normalize(position);
+        if(!held||wrapped)viewport.scrollLeft=position;
       }
       frame=requestAnimationFrame(animate);
     }
     function hold(){resumeAt=performance.now()+2500;position=viewport.scrollLeft;}
-    viewport.addEventListener('pointerdown',function(){touching=true;hold();},{passive:true});
-    window.addEventListener('pointerup',function(){if(touching){touching=false;hold();}},{passive:true});
-    window.addEventListener('pointercancel',function(){touching=false;hold();},{passive:true});
+    viewport.addEventListener('dragstart',function(e){e.preventDefault();});
+    viewport.addEventListener('pointerdown',function(e){
+      if(e.pointerType==='mouse'&&e.button!==0)return;
+      touching=true;hold();
+      if(e.pointerType==='mouse'){
+        mouseId=e.pointerId;lastX=e.clientX;
+        viewport.setPointerCapture(e.pointerId);
+        strip.classList.add('is-dragging');
+        e.preventDefault();
+      }
+    });
+    viewport.addEventListener('pointermove',function(e){
+      if(e.pointerId!==mouseId)return;
+      position=viewport.scrollLeft+lastX-e.clientX;lastX=e.clientX;
+      if(automatic)position=normalize(position);
+      viewport.scrollLeft=position;
+    });
+    function release(e){
+      if(!touching)return;
+      if(mouseId!==null&&e.pointerId!==mouseId)return;
+      var wasMouse=mouseId!==null;
+      touching=false;mouseId=null;strip.classList.remove('is-dragging');
+      hold();
+      if(wasMouse){resumeAt=0;lastFrame=0;}
+    }
+    window.addEventListener('pointerup',release,{passive:true});
+    window.addEventListener('pointercancel',release,{passive:true});
+    viewport.addEventListener('lostpointercapture',release,{passive:true});
     viewport.addEventListener('wheel',hold,{passive:true});
     viewport.addEventListener('keydown',hold);
     function layout(){
-      var moving=ready&&!motion.matches&&desktop.matches;
-      var nextMobile=ready&&!motion.matches&&!desktop.matches;
-      var wasMobile=mobile;mobile=nextMobile;
-      strip.classList.toggle('is-auto-mobile',mobile);
-      if(moving||mobile){
+      var wasAutomatic=automatic,oldDistance=distance;
+      automatic=ready&&!motion.matches;
+      strip.classList.toggle('is-auto',automatic);
+      if(automatic){
         distance=group.getBoundingClientRect().width+parseFloat(getComputedStyle(track).columnGap);
-        track.style.setProperty('--work-distance',distance+'px');
-        track.style.setProperty('--work-duration',(distance/26.3333)+'s');
-        // Enough copies to cover the viewport even at the end of a full cycle.
-        var count=Math.ceil(viewport.clientWidth/distance)+(mobile?3:1);
+        var count=Math.ceil(viewport.clientWidth/distance)+3;
         while(track.children.length<count){
           var clone=group.cloneNode(true);clone.setAttribute('aria-hidden','true');
           clone.querySelectorAll('img').forEach(function(img){img.alt='';img.loading='eager';});
           track.appendChild(clone);
         }
-      }
-      strip.classList.toggle('is-moving',moving);button.hidden=!(moving||mobile);
-      if(mobile){
-        if(!wasMobile){position=distance;viewport.scrollLeft=position;lastFrame=0;}
+        if(!wasAutomatic){position=distance;lastFrame=0;}
+        else if(oldDistance!==distance)position=distance+(viewport.scrollLeft%oldDistance)/oldDistance*distance;
+        viewport.scrollLeft=position;
         if(!frame)frame=requestAnimationFrame(animate);
       }else{
         if(frame)cancelAnimationFrame(frame);frame=0;lastFrame=0;
-        if(wasMobile)viewport.scrollLeft=0;
+        if(wasAutomatic)viewport.scrollLeft=0;
       }
+      button.hidden=!automatic;
     }
     readyImages(group).then(function(){ready=true;layout();});
     new ResizeObserver(layout).observe(viewport);
-    desktop.addEventListener('change',layout);motion.addEventListener('change',layout);
+    motion.addEventListener('change',layout);
     button.addEventListener('click',function(){var paused=strip.classList.toggle('is-paused');button.setAttribute('aria-pressed',String(paused));button.textContent=paused?(en?'Play photos':'Bilder fortsetzen'):(en?'Pause photos':'Bilder pausieren');});
   });
   var video=document.querySelector('.hero-video');

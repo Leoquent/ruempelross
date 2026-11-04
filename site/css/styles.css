@@ -526,15 +526,13 @@ section{padding:var(--sec-y) 0}
   min-height: 35px !important;
   max-height: 35px !important;
   align-items: center;
-  animation: ticker 30s linear infinite;
+  animation: ticker 60s linear infinite;
   animation-play-state: paused;
   will-change: transform;
 }
 .ticker.is-ready { animation-play-state: running; }
-.ticker-wrap:hover .ticker {
-  animation-play-state: paused;
-}
 .ticker-item {
+  flex: 0 0 auto;
   display: flex;
   height: 35px !important;
   min-height: 35px !important;
@@ -549,14 +547,10 @@ section{padding:var(--sec-y) 0}
   object-fit: contain;
   display: block;
   filter: none;
-  transition: transform 0.25s var(--ease);
-}
-.ticker-logo:hover {
-  transform: scale(1.05);
 }
 @keyframes ticker {
   0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-33.3333%, 0, 0); }
+  100% { transform: translate3d(calc(-100% / 3), 0, 0); }
 }
 
 /* ---------- Cards ---------- */
