@@ -522,7 +522,7 @@
       if (reduced) return;
       stopAuto();
       timer = setInterval(function () {
-        if (!document.hidden && !dragging) next();
+        if (!document.hidden && !dragging && !track.contains(document.activeElement)) next();
       }, DELAY);
     }
     function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
@@ -559,6 +559,10 @@
     track.addEventListener('touchstart', down, { passive: true });
     track.addEventListener('touchmove', move, { passive: false });
     track.addEventListener('touchend', up);
+    track.addEventListener('touchcancel', function () { dx = 0; up(); });
+    track.addEventListener('click', function (e) {
+      if (e.detail !== 0 && Math.abs(dx) > 6) e.preventDefault();
+    });
 
     // Keyboard
     root.setAttribute('tabindex', '-1');

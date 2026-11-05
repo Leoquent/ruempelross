@@ -1105,6 +1105,9 @@ blockquote footer{font-size:.9rem;color:var(--g500);margin-top:12px}
 }
 
 .rev-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.rev-link{line-height:0}
+.rev-link::after{content:'';position:absolute;inset:0;border-radius:inherit}
+.rev-card:has(.rev-link:focus-visible){box-shadow:0 0 0 3px var(--focus)}
 .rev-stars{color:var(--yellow);letter-spacing:3px;font-size:1.15rem;line-height:1}
 .rev-gic{width:22px;height:22px}
 .rev-text{
