@@ -61,6 +61,8 @@
     viewport.addEventListener('pointermove',function(e){
       if(e.pointerId!==dragId)return;
       var now=performance.now(),delta=lastX-e.clientX,elapsed=Math.max(now-lastMove,1);
+      // A short touch swipe should cover roughly one photo on mobile.
+      if(e.pointerType==='touch')delta*=2;
       // Cap inertia, not finger movement; a quick flick cannot race through the copies.
       velocity=Math.max(-2,Math.min(2,delta/elapsed));
       lastMove=now;lastX=e.clientX;

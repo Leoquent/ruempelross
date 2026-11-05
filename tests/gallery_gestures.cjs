@@ -11,8 +11,19 @@ const track={children:[group],appendChild(c){this.children.push(c);}};group.pare
 strip.querySelector=x=>({'.work-group':group,'.work-pause':button,'.work-window':viewport}[x]);
 vm.runInNewContext(readFileSync('site/js/enhancements.js','utf8'),{document:{documentElement:{lang:'de'},querySelectorAll:x=>x==='.work-strip'?[strip]:[],querySelector:()=>null,hidden:false},window:{innerWidth:390,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(k,f){windowEvents[k]=f;}},performance:{now:()=>now},getComputedStyle:()=>({columnGap:'16'}),ResizeObserver:class{observe(){}},requestAnimationFrame:f=>(nextFrame=f,1),cancelAnimationFrame(){}});
 function frame(){now+=16;nextFrame(now);assert(viewport.scrollLeft>=3864&&viewport.scrollLeft<7728,'loop remains inside repeated sequence');}
-function pointer(type,x,id=1){now+=8;const e={type,pointerId:id,pointerType:'touch',isPrimary:true,clientX:x,button:0,preventDefault(){}};(events[type]||windowEvents[type])(e);}
+function pointer(type,x,pointerType='touch'){now+=8;const e={type,pointerId:1,pointerType,isPrimary:true,clientX:x,button:0,preventDefault(){}};(events[type]||windowEvents[type])(e);}
 setImmediate(()=>{
+ const start=viewport.scrollLeft;
+ pointer('pointerdown',290);
+ pointer('pointermove',152);
+ assert.equal(viewport.scrollLeft,start+276,'a 138px touch swipe advances one mobile photo');
+ pointer('pointermove',290);
+ assert.equal(viewport.scrollLeft,start,'touch dragging reverses at the same ratio');
+ pointer('pointerup',290);
+ pointer('pointerdown',290,'mouse');
+ pointer('pointermove',152,'mouse');
+ assert.equal(viewport.scrollLeft,start+138,'mouse dragging stays 1:1');
+ pointer('pointerup',152,'mouse');
  for(let i=0;i<40;i++){
   pointer('pointerdown',350);pointer('pointermove',i%2?-30000:30000);pointer('pointerup',0);
   frame();let previous=viewport.scrollLeft;frame();let movement=Math.abs(viewport.scrollLeft-previous);movement=Math.min(movement,3864-movement);assert(movement<=32.1,'inertia capped at 2 px/ms');
