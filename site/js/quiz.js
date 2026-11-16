@@ -25,7 +25,7 @@
       messieNote: 'Bei besonderen Situationen erstellen wir nach einer kostenlosen Besichtigung ein individuelles Angebot für Sie.',
       sending: 'Wird gesendet …',
       sendFailed: 'Ihre Anfrage konnte gerade nicht übertragen werden. Bitte versuchen Sie es noch einmal – ' +
-        'oder rufen Sie uns direkt an: <a href="tel:+4971123178489" style="color:#fff">0711 23178489</a>. ' +
+        'oder rufen Sie uns direkt an: <a href="tel:+4917642723702" style="color:#fff">0176 42723702</a>. ' +
         'Alternativ: <a href="{mailto}" style="color:#fff">Anfrage per E-Mail senden</a> (Text ist vorbereitet).',
       alertTermin: 'Bitte wählen Sie einen Zeitraum.',
       alertPlz: 'Bitte geben Sie eine gültige Postleitzahl ein.',
@@ -93,7 +93,7 @@
       messieNote: 'For special situations, we will provide an individual offer after a free inspection.',
       sending: 'Sending...',
       sendFailed: 'Your request could not be transmitted. Please try again – ' +
-        'or call us directly: <a href="tel:+4971123178489" style="color:#fff">0711 23178489</a>. ' +
+        'or call us directly: <a href="tel:+4917642723702" style="color:#fff">0176 42723702</a>. ' +
         'Alternatively: <a href="{mailto}" style="color:#fff">send your request by e-mail</a> (text is pre-filled).',
       alertTermin: 'Please select a timeframe.',
       alertPlz: 'Please enter a valid ZIP code.',

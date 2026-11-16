@@ -105,7 +105,7 @@ def write_page(slug, title, desc, hero, intro, content, area='Stuttgart', area_t
       <span class="kicker">RümpelRoss · Familienbetrieb aus Stuttgart</span>
       <h1>{escape(hero)}</h1>
       <p class="lead">{escape(intro)}</p>
-      <a class="btn btn-primary" href="tel:+4971123178489">Vorhaben besprechen · 0711 23178489</a>
+      <a class="btn btn-primary" href="tel:+4917642723702">Vorhaben besprechen · 0176 42723702</a>
     </div>
     {photo_html}
   </div>
@@ -116,7 +116,7 @@ def write_page(slug, title, desc, hero, intro, content, area='Stuttgart', area_t
         body+='<section class="sec-alt"><div class="container local-copy"><span class="kicker">Gut zu wissen</span><h2>Häufige Fragen</h2>\n'
         for q,a in faq: body+='<details class="content-faq"><summary>'+escape(q)+'</summary><p>'+escape(a)+'</p></details>\n'
         body+='</div></section>\n'
-    body+='''<section class="sec-dark"><div class="container local-copy"><span class="kicker">Persönlich statt kompliziert</span><h2>Was dürfen wir für Sie anpacken?</h2><p>Schildern Sie uns Ihr Vorhaben. Wir besprechen Umfang und Wunschtermin und vereinbaren bei Bedarf eine kostenlose Besichtigung.</p><a class="btn btn-primary" href="tel:+4971123178489">0711 23178489 anrufen</a> <a class="btn btn-outline-light" href="mailto:info@ruempelross.de">E-Mail schreiben</a><p class="content-contact-note">Für Entrümpelungen: <a href="index.html#anfrage">Ersteinschätzung im Preisrechner anfragen →</a></p></div></section>
+    body+='''<section class="sec-dark"><div class="container local-copy"><span class="kicker">Persönlich statt kompliziert</span><h2>Was dürfen wir für Sie anpacken?</h2><p>Schildern Sie uns Ihr Vorhaben. Wir besprechen Umfang und Wunschtermin und vereinbaren bei Bedarf eine kostenlose Besichtigung.</p><a class="btn btn-primary" href="tel:+4917642723702">0176 42723702 anrufen</a> <a class="btn btn-outline-light" href="mailto:info@ruempelross.de">E-Mail schreiben</a><p class="content-contact-note">Für Entrümpelungen: <a href="index.html#anfrage">Ersteinschätzung im Preisrechner anfragen →</a></p></div></section>
 </main>
 '''
     (SITE/filename).write_text(head+body+footer,encoding='utf-8')
